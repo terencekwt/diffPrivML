@@ -4,22 +4,24 @@
 \alias{DPNaiveBayesClassifier}
 \title{Implementation of DPNaiveBayesClassifier}
 \usage{
-DPNaiveBayesClassifier(data, mechanism, budget)
+DPNaiveBayesClassifier(y, x, mechanism, epsilon)
 }
 \arguments{
-\item{data}{a data frame}
+\item{y}{a named vector of outcome labels}
+
+\item{x}{a data frame of named predictors}
 
 \item{mechanism}{function for DF}
 
-\item{budget}{privacy budget}
+\item{epsilon}{privacy budget}
 }
 \value{
-a trained result
+a classifier
 }
 \description{
 Implementation of DPNaiveBayesClassifier
 }
 \examples{
-1+1
+
 
 }

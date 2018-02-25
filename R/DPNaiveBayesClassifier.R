@@ -1,19 +1,21 @@
 #'Implementation of DPNaiveBayesClassifier
 #'
-#'@param data a data frame
+#'@param y a named vector of outcome labels
+#'@param x a data frame of named predictors
 #'@param mechanism function for DF
-#'@param budget privacy budget
+#'@param epsilon privacy budget
 #'
 #'@return a classifier
 #'
 #'@import caret
+#'@importFrom stats dnorm
 #'
 #'@export
 #'
 #'@examples
 #'
 #'
-DPNaiveBayesClassifier <- function(data, mechanism, budget){
+DPNaiveBayesClassifier <- function(y, x, mechanism, epsilon){
   ## to be implemented and perhaps convert to s3 class
 }
 
@@ -49,7 +51,7 @@ likelihood <-
       as.table(tab)
     }
     else {
-      ## it is nominal attributes
+      ## it is categorical attributes
     }
   }, simplify = FALSE)
 
@@ -61,7 +63,11 @@ test_y <- training_set[,5]
 predict<- function(data){
   pnorms <- sapply(class_labels, function(y) {
     prod(sapply(names(test_x), function(x){
-      dnorm(data[[x]], mean = likelihood[[x]]['mean',y], sd = likelihood[[x]]['sd',y])
+      if(is.numeric(data[[x]])){
+        dnorm(data[[x]], mean = likelihood[[x]]['mean',y], sd = likelihood[[x]]['sd',y])
+      } else {
+        #simple division
+      }
     }))
   })
   posterior_prob <- prior_prob * pnorms
