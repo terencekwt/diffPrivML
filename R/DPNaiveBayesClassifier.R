@@ -1,3 +1,18 @@
+#TODO should be in its own class later, this is for just a makeshift laplace
+laplace <- function(originalData, sensitivity, epsilon) {
+  scaleFactor <- sensitivity / epsilon
+  noise <- -1
+  while(noise < 0){
+    if (is.null(epsilon)){
+      noise <- 0
+    } else {
+      noise <- stats::rexp(1, rate = 1/scaleFactor) -
+        stats::rexp(1, rate = 1/scaleFactor)
+    }
+  }
+  originalData + noise
+}
+
 #'Implementation of DPNaiveBayesClassifier. An S3 class.
 #'
 #'@param y a named vector of outcome labels
@@ -17,11 +32,11 @@
 #'x <- iris[, 1:4]
 #'naiveBayesDP <- DPNaiveBayesClassifier(y, x, epsilon = 1.0)
 #'
-DPNaiveBayesClassifier <- function(y, x, epsilon=NULL, mechanism=NULL){
+DPNaiveBayesClassifier <- function(y, x, epsilon = NULL, mechanism = NULL){
 
   #validations before we proceed
   if(nrow(x) != length(y)){
-    stop("The predictors x and class labels y have unequal lengths.")
+    stop("ERROR: The predictors x and class labels y have unequal lengths.")
   }
 
   #training
@@ -30,15 +45,18 @@ DPNaiveBayesClassifier <- function(y, x, epsilon=NULL, mechanism=NULL){
   classLabels <- names(table(trainingSetY))
 
   #P(C_j)
-  priorProb <- as.vector(table(trainingSetY)) / length(trainingSetY)
+  priorProb <- laplace(as.vector(table(trainingSetY)), 1, 1)/ length(trainingSetY)
 
   #mean and sd for all P(a_i|C_j) calculating purposes
   likelihoods <-
     sapply(names(trainingSetX), function(featureName) {
       feature <- trainingSetX[[featureName]]
       if (is.numeric(feature)) {
-        statsTable <- rbind(tapply(feature, trainingSetY, mean),
-                            tapply(feature, trainingSetY, stats::sd))
+        sensitivity <- (max(feature) - min(feature)) / (length(feature) + 1)
+        statsTable <- rbind(tapply(feature, trainingSetY,
+                                   function(x) {laplace(mean(x), sensitivity, epsilon)}),
+                            tapply(feature, trainingSetY,
+                                   function(x) {laplace(stats::sd(x), sensitivity, epsilon)}))
         rownames(statsTable) <- c("mean", "sd")
         names(dimnames(statsTable)) <- c(featureName, "")
         as.table(statsTable)
@@ -46,13 +64,13 @@ DPNaiveBayesClassifier <- function(y, x, epsilon=NULL, mechanism=NULL){
         # it is categorical attributes, therefore just count cardinalities
         tibble(x = feature, class = trainingSetY) %>%
           group_by(x, class) %>%
-          summarise(n=n()) %>%
-          spread(x, class)
+          summarise(n=n())
       }
     }, simplify = FALSE)
 
   self <- list(likelihoods = likelihoods, priorProb = priorProb,
        classLabels = classLabels)
+
   class(self) <- append("DPNaiveBayesClassifier", class(self))
   return(self)
 }
