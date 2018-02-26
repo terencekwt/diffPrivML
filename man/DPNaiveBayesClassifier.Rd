@@ -2,26 +2,29 @@
 % Please edit documentation in R/DPNaiveBayesClassifier.R
 \name{DPNaiveBayesClassifier}
 \alias{DPNaiveBayesClassifier}
-\title{Implementation of DPNaiveBayesClassifier}
+\title{Implementation of DPNaiveBayesClassifier. An S3 class.}
 \usage{
-DPNaiveBayesClassifier(y, x, mechanism, epsilon)
+DPNaiveBayesClassifier(y, x, epsilon = NULL, mechanism = NULL)
 }
 \arguments{
 \item{y}{a named vector of outcome labels}
 
-\item{x}{a data frame of named predictors}
+\item{x}{a data frame with named predictor columns}
 
-\item{mechanism}{function for DF}
+\item{epsilon}{privacy budget in epsilon-differential private procedure}
 
-\item{epsilon}{privacy budget}
+\item{mechanism}{function for DF (i.e. Laplace, Gaussian)}
 }
 \value{
 a classifier
 }
 \description{
-Implementation of DPNaiveBayesClassifier
+Implementation of DPNaiveBayesClassifier. An S3 class.
 }
 \examples{
-
+data(iris)
+y <- iris[, 5]
+x <- iris[, 1:4]
+naiveBayesDP <- DPNaiveBayesClassifier(y, x, epsilon = 1.0)
 
 }

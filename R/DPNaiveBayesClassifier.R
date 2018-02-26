@@ -1,78 +1,107 @@
-#'Implementation of DPNaiveBayesClassifier
+#'Implementation of DPNaiveBayesClassifier. An S3 class.
 #'
 #'@param y a named vector of outcome labels
-#'@param x a data frame of named predictors
-#'@param mechanism function for DF
-#'@param epsilon privacy budget
+#'@param x a data frame with named predictor columns
+#'@param epsilon privacy budget in epsilon-differential private procedure
+#'@param mechanism function for DF (i.e. Laplace, Gaussian)
 #'
 #'@return a classifier
 #'
-#'@import caret
-#'@importFrom stats dnorm
+#'@import dplyr
 #'
 #'@export
 #'
 #'@examples
+#'data(iris)
+#'y <- iris[, 5]
+#'x <- iris[, 1:4]
+#'naiveBayesDP <- DPNaiveBayesClassifier(y, x, epsilon = 1.0)
 #'
-#'
-DPNaiveBayesClassifier <- function(y, x, mechanism, epsilon){
-  ## to be implemented and perhaps convert to s3 class
-}
+DPNaiveBayesClassifier <- function(y, x, epsilon=NULL, mechanism=NULL){
 
-## example of simple naive bayes from scratch on iris dataset,
-## will need to modify this to be DP and generalize it,
-## but this is a good start
-library(caret)
+  #validations before we proceed
+  if(nrow(x) != length(y)){
+    stop("The predictors x and class labels y have unequal lengths.")
+  }
 
-#preprocessing
-data(iris)
-dataset <- iris
-training_indices <-createDataPartition(dataset$Species, p = 0.70, list = FALSE)
-test_set <- dataset[-training_indices, ]
-training_set <- dataset[training_indices, ]
+  #training
+  trainingSetX <- x
+  trainingSetY <- y
+  classLabels <- names(table(trainingSetY))
 
-#training
-training_x <- training_set[,1:4]
-training_y <- training_set[,5]
-class_labels <- names(table(training_y))
+  #P(C_j)
+  priorProb <- as.vector(table(trainingSetY)) / length(trainingSetY)
 
-#P(C_j)
-prior_prob <- as.vector(table(training_y)) / nrow(training_set)
-
-#mean and sd for all P(a_i|C_j)
-likelihood <-
-  sapply(names(training_x), function(feature_name) {
-    feature <- training_set[[feature_name]]
-    if (is.numeric(feature)) {
-      tab <- rbind(tapply(feature, training_y, mean),
-                   tapply(feature, training_y, sd))
-      rownames(tab) <- c("mean", "sd")
-      names(dimnames(tab)) <- c(feature_name, "")
-      as.table(tab)
-    }
-    else {
-      ## it is categorical attributes
-    }
-  }, simplify = FALSE)
-
-#prediction
-
-test_x <- training_set[,1:4]
-test_y <- training_set[,5]
-
-predict<- function(data){
-  pnorms <- sapply(class_labels, function(y) {
-    prod(sapply(names(test_x), function(x){
-      if(is.numeric(data[[x]])){
-        dnorm(data[[x]], mean = likelihood[[x]]['mean',y], sd = likelihood[[x]]['sd',y])
+  #mean and sd for all P(a_i|C_j) calculating purposes
+  likelihoods <-
+    sapply(names(trainingSetX), function(featureName) {
+      feature <- trainingSetX[[featureName]]
+      if (is.numeric(feature)) {
+        statsTable <- rbind(tapply(feature, trainingSetY, mean),
+                            tapply(feature, trainingSetY, stats::sd))
+        rownames(statsTable) <- c("mean", "sd")
+        names(dimnames(statsTable)) <- c(featureName, "")
+        as.table(statsTable)
       } else {
-        #simple division
+        # it is categorical attributes, therefore just count cardinalities
+        tibble(x = feature, class = trainingSetY) %>%
+          group_by(x, class) %>%
+          summarise(n=n()) %>%
+          spread(x, class)
       }
-    }))
-  })
-  posterior_prob <- prior_prob * pnorms
-  prediction <- class_labels[which.max(posterior_prob)]
-  prediction
+    }, simplify = FALSE)
+
+  self <- list(likelihoods = likelihoods, priorProb = priorProb,
+       classLabels = classLabels)
+  class(self) <- append("DPNaiveBayesClassifier", class(self))
+  return(self)
 }
-predictions <- apply(test_x, 1, predict)
-accuracy <- sum(predictions==test_y)/length(test_y)
+
+#DF procedure (ouput perturbation)
+
+#'S3 method for predict
+#'
+#'@param object the classifier object for this predict method
+#'@param testSetX a data frame with named predictor columns
+#'@param ... not applicable for this class
+#'
+#'@importFrom stats dnorm
+#'@import caret
+#'
+#'@export
+#'
+#'@examples
+#'library(caret)
+#'data(iris)
+#'y <- iris[, 5]
+#'x <- iris[, 1:4]
+#'trainingIndices <-createDataPartition(y, p = 0.70, list = FALSE)
+#'trainingSetX <- x[trainingIndices, ]
+#'trainingSetY <- y[trainingIndices]
+#'testSetX <- x[-trainingIndices, ]
+#'testSetY <- y[-trainingIndices]
+#'naiveBayesDP <- DPNaiveBayesClassifier(trainingSetY, trainingSetX)
+#'predictions <- predict(naiveBayesDP, testSetX)
+#'accuracy <- sum(predictions == testSetY) / length(testSetY)
+#'
+predict.DPNaiveBayesClassifier <- function(object, testSetX = NULL, ...){
+
+  predictOneData <- function(data){
+    likelihoods <- object$likelihoods
+    pnorms <- sapply(object$classLabels, function(y) {
+      prod(sapply(names(testSetX), function(x){
+        if (is.numeric(data[[x]])) {
+          stats::dnorm(data[[x]], mean = likelihoods[[x]]['mean', y],
+                       sd = likelihoods[[x]]['sd', y])
+        } else {
+          likelihoods[[x]][y, data[[x]]]
+        }
+      }))
+    })
+    posteriorProb <- object$priorProb * pnorms
+    prediction <- object$classLabels[which.max(posteriorProb)]
+    prediction
+  }
+
+  apply(testSetX, 1, predictOneData)
+}
