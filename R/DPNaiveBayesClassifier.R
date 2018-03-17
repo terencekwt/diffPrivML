@@ -22,7 +22,6 @@ laplace <- function(originalData, sensitivity, epsilon) {
 #'
 #'@return a classifier
 #'
-#'@import dplyr
 #'
 #'@export
 #'

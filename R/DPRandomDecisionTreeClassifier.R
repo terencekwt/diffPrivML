@@ -1,16 +1,8 @@
-
-#Example
-
-A <- c(1,0,1,0,1,1,1,0)
-B <- c(0,0,0,1,1,1,0,0)
-C <- c(1,1,0,0,1,1,1,1)
-D <- c(0,0,0,0,0,0,0,1)
-E <- c(0,0,0,1,0,1,1,0)
-class <-c('T','F','T','F','T','F','T','T')
-
-X <- as.data.frame(cbind(A,B,C,D,E))
-
-RandomDecisionTree <- R6Class("RandomDecisionTree",
+#'Get random tree
+#'
+#'@importFrom R6 R6Class
+#'
+RandomDecisionTree <- R6::R6Class("RandomDecisionTree",
   public = list(
     initialize = function(predictors) {
       private$chosen <- predictors[sample(length(predictors),1)]
@@ -67,18 +59,34 @@ RandomDecisionTree <- R6Class("RandomDecisionTree",
     counter = NA
   ))
 
-#calculate the cardinality of each predictors
-predictors <- table()
+test <- function(){
 
-#initialize tree
-set.seed(15)
-tree <- RandomDecisionTree$new(predictors=names(X))
-tree$printTree()
-#train the tree
-for(row in 1:nrow(X)){
-  tree$updateStats(row=X[row,], label=class[row])
+  #Example
+
+  A <- c(1,0,1,0,1,1,1,0)
+  B <- c(0,0,0,1,1,1,0,0)
+  C <- c(1,1,0,0,1,1,1,1)
+  D <- c(0,0,0,0,0,0,0,1)
+  E <- c(0,0,0,1,0,1,1,0)
+  class <-c('T','F','T','F','T','F','T','T')
+
+  X <- as.data.frame(cbind(A,B,C,D,E))
+
+  #calculate the cardinality of each predictors
+  predictors <- table()
+
+  #initialize tree
+  set.seed(15)
+  tree <- RandomDecisionTree$new(predictors=names(X))
+  tree$printTree()
+  #train the tree
+  for(row in 1:nrow(X)){
+    tree$updateStats(row=X[row,], label=class[row])
+  }
+  tree$getCounter(X[1,])
+
 }
-tree$getCounter(X[1,])
+
 
 
 

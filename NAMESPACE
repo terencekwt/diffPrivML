@@ -3,5 +3,5 @@
 S3method(predict,DPNaiveBayesClassifier)
 export(DPNaiveBayesClassifier)
 import(caret)
-import(dplyr)
+importFrom(R6,R6Class)
 importFrom(stats,dnorm)
