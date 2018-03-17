@@ -16,7 +16,7 @@ DPNaiveBayesClassifier(y, x, epsilon = NULL, mechanism = NULL)
 \item{mechanism}{function for DF (i.e. Laplace, Gaussian)}
 }
 \value{
-a classifier
+a classifier object
 }
 \description{
 Implementation of DPNaiveBayesClassifier. An S3 class.
@@ -27,4 +27,7 @@ y <- iris[, 5]
 x <- iris[, 1:4]
 naiveBayesDP <- DPNaiveBayesClassifier(y, x, epsilon = 1.0)
 
+}
+\author{
+Terence Tam
 }

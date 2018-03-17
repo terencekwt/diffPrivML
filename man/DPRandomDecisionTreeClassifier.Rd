@@ -7,6 +7,22 @@
 DPRandomDecisionTreeClassifier(Y, X, epsilon = NULL, mechanism = NULL,
   numTrees = 5, height = ncol(X)/2)
 }
+\arguments{
+\item{Y}{a named vector of outcome labels}
+
+\item{X}{a data frame with named predictor columns}
+
+\item{epsilon}{privacy budget in epsilon-differential private procedure}
+
+\item{mechanism}{function for DF (i.e. Laplace, Gaussian)}
+
+\item{numTrees}{# of trees to grow in the ensemble, default is 5}
+
+\item{height}{the maxinum height of each decision tree}
+}
 \description{
 Implementation of DPRandomDecisionTreeClassifier. An S3 class.
+}
+\author{
+Terence Tam
 }

@@ -3,12 +3,19 @@
 \docType{data}
 \name{RandomDecisionTree}
 \alias{RandomDecisionTree}
-\title{Get random tree}
+\title{This is a factory generator for a RandomDecisionTree R6 class object.
+A RandomDeciscionTree, RDT, is a type of decision tree where the partitioning
+at each branch is done randomly, unlike other criterion based CART trees.}
 \format{An object of class \code{R6ClassGenerator} of length 24.}
 \usage{
 RandomDecisionTree
 }
 \description{
-Get random tree
+This is a factory generator for a RandomDecisionTree R6 class object.
+A RandomDeciscionTree, RDT, is a type of decision tree where the partitioning
+at each branch is done randomly, unlike other criterion based CART trees.
+}
+\author{
+Terence Tam
 }
 \keyword{datasets}

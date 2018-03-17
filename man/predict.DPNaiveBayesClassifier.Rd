@@ -31,3 +31,6 @@ predictions <- predict(naiveBayesDP, testSetX)
 accuracy <- sum(predictions == testSetY) / length(testSetY)
 
 }
+\author{
+Terence Tam
+}

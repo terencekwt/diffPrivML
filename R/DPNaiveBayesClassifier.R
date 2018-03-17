@@ -15,13 +15,14 @@ laplace <- function(originalData, sensitivity, epsilon) {
 
 #'Implementation of DPNaiveBayesClassifier. An S3 class.
 #'
+#'@author Terence Tam
+#'
 #'@param y a named vector of outcome labels
 #'@param x a data frame with named predictor columns
 #'@param epsilon privacy budget in epsilon-differential private procedure
 #'@param mechanism function for DF (i.e. Laplace, Gaussian)
 #'
-#'@return a classifier
-#'
+#'@return a classifier object
 #'
 #'@export
 #'
@@ -75,9 +76,9 @@ DPNaiveBayesClassifier <- function(y, x, epsilon = NULL, mechanism = NULL){
   return(self)
 }
 
-#DF procedure (ouput perturbation)
-
 #'S3 method for predict
+#'
+#'@author Terence Tam
 #'
 #'@param object the classifier object for this predict method
 #'@param testSetX a data frame with named predictor columns
