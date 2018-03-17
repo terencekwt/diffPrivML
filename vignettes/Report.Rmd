@@ -9,16 +9,51 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-##Description
+## Description
 
-what does this package do?
+Give some background info on $\epsilon$-differential private mechanism. 
 
-##Use cases
+what does this package do? 
+-precursor to standard mechanism with DF
 
-##Random Decision Tree Ensembles Classifier
+## Use cases
 
-##Naive Bayes Classifier
+Our use cases are mainly supported for classification tasks.
 
-##Contributions
+### Random Decision Tree Ensembles Classifier
+
+First, let's invoke the library.
+
+```{r}
+library(diffPrivML)
+```
+
+Then, let's use a dataset preloaded in the diffPrivML package.
+```{r}
+data(BreastCancer)
+head(BreastCancer)
+```
+
+### Naive Bayes Classifier
+
+```{r}
+library(caret)
+data(iris)
+y <- iris[, 5]
+x <- iris[, 1:4]
+trainingIndices <-createDataPartition(y, p = 0.70, list = FALSE)
+trainingSetX <- x[trainingIndices, ]
+trainingSetY <- y[trainingIndices]
+testSetX <- x[-trainingIndices, ]
+testSetY <- y[-trainingIndices]
+naiveBayesDP <- DPNaiveBayesClassifier(trainingSetY, trainingSetX)
+predictions <- predict(naiveBayesDP, testSetX)
+accuracy <- sum(predictions == testSetY) / length(testSetY)
+accuracy
+```
+
+Add the ggplot for accuracy vs epsilon
+
+## Contributions
 
 
