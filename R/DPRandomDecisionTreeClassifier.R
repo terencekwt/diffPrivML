@@ -13,8 +13,8 @@ RandomDecisionTree <- R6::R6Class("RandomDecisionTree",
       private$levelsX = levelsX
       private$height = height
 
-      #at each node, we picked a new predictor as a new child node
-      #to the RDT
+      #at each node, we picked a new predictor at random to the RDT, but
+      #don't pick any that is already used in earlier nodes
       private$chosen <- predictors[sample(length(predictors),1)]
 
       if(length(levelsX) - length(predictors) < private$height) {
@@ -128,10 +128,23 @@ DPRandomDecisionTreeClassifier <- function(Y, X, epsilon = NULL, mechanism = NUL
     trees<-c(trees, tree)
     i=i+1
   }
-  self <- list(trees = trees, classLabels = classLabels)
+  self <- list(trees = trees, classLabels = classLabels, epsilon = epsilon)
 
   class(self) <- append("DPRandomDecisionTreeClassifier", class(self))
   return(self)
+}
+
+#TODO should be in its own class later, this is for just a makeshift laplace
+laplace <- function(originalData, sensitivity, epsilon) {
+  scaleFactor <- sensitivity / epsilon
+  noise <- -1
+    if (is.null(epsilon)){
+      noise <- 0
+    } else {
+      noise <- stats::rexp(1, rate = 1/scaleFactor) -
+        stats::rexp(1, rate = 1/scaleFactor)
+    }
+  originalData + noise
 }
 
 #'S3 method for predict
@@ -149,7 +162,7 @@ predict.DPRandomDecisionTreeClassifier <- function(object, testSetX = NULL, ...)
   trees <- object$trees
 
   predictOneData <- function(data){
-    countsByClass <- lapply(trees, function(tree){ tree$getCounter(data)})
+    countsByClass <- lapply(trees, function(tree){sapply(tree$getCounter(data), function(x){laplace(x,1,NULL)})})
     countsByClass <- Reduce("+", countsByClass)
     probabilities <- countsByClass / sum(countsByClass)
     prediction <- object$classLabels[which.max(probabilities)]
