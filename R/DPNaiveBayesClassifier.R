@@ -61,10 +61,11 @@ DPNaiveBayesClassifier <- function(y, x, epsilon = NULL, mechanism = NULL){
         names(dimnames(statsTable)) <- c(featureName, "")
         as.table(statsTable)
       } else {
-        # it is categorical attributes, therefore just count cardinalities
-        tibble(x = feature, class = trainingSetY) %>%
-          group_by(x, class) %>%
-          summarise(n=n())
+        # it is categorical attribute, therefore just count cardinalities
+        # and then divide by the # of samples belonging to that class
+        statsTable <- cbind(feature, trainingSetY)
+        statsTable <- apply(table(statsTable), 2,
+                            function(column) { column / length(column)})
       }
     }, simplify = FALSE)
 
