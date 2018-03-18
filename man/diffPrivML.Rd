@@ -10,3 +10,14 @@ enhanced with differential privacy.}
 The \code{diffPrivML} package is a collection of machine learning workflow
 enhanced with differential privacy.
 }
+\references{
+Zhanglong Ji, Zachary C Lipton, and Charles Elkan. “Differential privacy and machine learning:
+  A survey and review”. In: arXiv preprint arXiv:1412.7584 (2014).
+
+Jaideep Vaidya, Basit Shafiq, Anirban Basu, and Yuan Hong. "Differentially
+  private naive Bayes classification." In Web Intelligence, pages 571–576, 2013.
+
+Geetha Jagannathan, Krishnan Pillaipakkamnatt, and Rebecca N. Wright.
+  "A practical differentially private random decision tree classifier". In International
+  Conference on Data Mining Workshops, pages 114–121, 2009.
+}

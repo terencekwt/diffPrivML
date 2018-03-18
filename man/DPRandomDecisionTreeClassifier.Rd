@@ -5,7 +5,7 @@
 \title{Implementation of DPRandomDecisionTreeClassifier. An S3 class.}
 \usage{
 DPRandomDecisionTreeClassifier(Y, X, epsilon = NULL, mechanism = NULL,
-  numTrees = 5, height = ncol(X)/2)
+  numTrees = 5, height = floor(ncol(X)/2))
 }
 \arguments{
 \item{Y}{a named vector of outcome labels}
@@ -18,7 +18,8 @@ DPRandomDecisionTreeClassifier(Y, X, epsilon = NULL, mechanism = NULL,
 
 \item{numTrees}{# of trees to grow in the ensemble, default is 5}
 
-\item{height}{the maxinum height of each decision tree}
+\item{height}{the maxinum height of each decision tree, default is # of
+predictors in X, divided by 2. i.e. floor(ncol(X)/2)}
 }
 \description{
 Implementation of DPRandomDecisionTreeClassifier. An S3 class.
