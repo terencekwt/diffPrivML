@@ -15,3 +15,9 @@ Suggests: knitr,
     rmarkdown,
     testthat
 VignetteBuilder: knitr
+Collate: 
+    'noiseFunctions.R'
+    'DPNaiveBayesClassifier.R'
+    'DPRandomDecisionTreeClassifier.R'
+    'datasets.R'
+    'diffPrivML.R'

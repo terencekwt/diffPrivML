@@ -1,17 +1,5 @@
-#TODO should be in its own class later, this is for just a makeshift laplace
-laplace <- function(originalData, sensitivity, epsilon) {
-  scaleFactor <- sensitivity / epsilon
-  noise <- -1
-  while(noise < 0){
-    if (is.null(epsilon)){
-      noise <- 0
-    } else {
-      noise <- stats::rexp(1, rate = 1/scaleFactor) -
-        stats::rexp(1, rate = 1/scaleFactor)
-    }
-  }
-  originalData + noise
-}
+#' @include noiseFunctions.R
+NULL
 
 #'Implementation of DPNaiveBayesClassifier. An S3 class.
 #'
@@ -72,8 +60,26 @@ DPNaiveBayesClassifier <- function(y, x, epsilon = NULL, mechanism = NULL){
   self <- list(likelihoods = likelihoods, priorProb = priorProb,
        classLabels = classLabels)
 
-  class(self) <- append("DPNaiveBayesClassifier", class(self))
+  class(self) <- c("DPNaiveBayesClassifier", "DPClassifier", class(self))
   return(self)
+}
+
+summary.DPNaiveBayesClassifier <- function(object, ...) {
+
+  NextMethod()
+  #stopifnot(inherits(x, "DPNaiveBayesClassifier"))
+  cat("## Class labels:", object$classLabels, "\n\n")
+  cat("## Prior probabilites:", object$priorProb, "\n\n")
+  cat("## Likelihoods", "\n")
+  for (l in object$likelihoods) {
+    cat("## ")
+    print(l)
+  }
+}
+
+summary.DPClassifier <- function(object, ...) {
+  cat("Ouputting the trained model of differential private classifer \n\n")
+  invisible(object)
 }
 
 #'S3 method for predict
@@ -124,3 +130,4 @@ predict.DPNaiveBayesClassifier <- function(object, testSetX = NULL, ...){
 
   apply(testSetX, 1, predictOneData)
 }
+

@@ -1,3 +1,6 @@
+#' @include noiseFunctions.R
+NULL
+
 #'This is a factory generator for a RandomDecisionTree R6 class object.
 #'A RandomDeciscionTree, RDT, is a type of decision tree where the partitioning
 #'at each branch is done randomly, unlike other criterion based CART trees.
@@ -63,7 +66,7 @@ RandomDecisionTree <- R6::R6Class("RandomDecisionTree",
       if(is.null(private$children)){
         private$chosen
       } else {
-        paste(private$chosen, "(", private$children[[1]]$printTree(), private$children[[2]]$printTree(), ")")
+        paste(private$chosen, "(", private$children[[1]]$printTree(), "," , private$children[[2]]$printTree(), ")")
       }
     },
     getCounter = function(row){
@@ -122,12 +125,10 @@ DPRandomDecisionTreeClassifier <- function(Y, X, epsilon = NULL, mechanism = NUL
   while(i <= numTrees) {
     tree <- RandomDecisionTree$new(predictors=names(X), levelsY = classLabels,
                                    levelsX = levelsX, height = height)
-    tree$printTree()
-    #train the tree
+    #train the tree for each training example
     for(row in 1:nrow(X)){
       tree$updateStats(row=X[row,], label=Y[row])
     }
-    #tree$printTree()
     trees<-c(trees, tree)
     i=i+1
   }
@@ -135,19 +136,6 @@ DPRandomDecisionTreeClassifier <- function(Y, X, epsilon = NULL, mechanism = NUL
 
   class(self) <- append("DPRandomDecisionTreeClassifier", class(self))
   return(self)
-}
-
-#TODO should be in its own class later, this is for just a makeshift laplace
-laplace <- function(originalData, sensitivity, epsilon) {
-  scaleFactor <- sensitivity / epsilon
-  noise <- -1
-    if (is.null(epsilon)){
-      noise <- 0
-    } else {
-      noise <- stats::rexp(1, rate = 1/scaleFactor) -
-        stats::rexp(1, rate = 1/scaleFactor)
-    }
-  originalData + noise
 }
 
 #'S3 method for predict
@@ -160,51 +148,33 @@ laplace <- function(originalData, sensitivity, epsilon) {
 #'
 #'@export
 #'
+#'@examples
+#'library(caret)
+#'data(BreastCancer)
+#'Y <- BreastCancer[, 11]
+#'X <- BreastCancer[, 2:10]
+#'trainingIndices <-createDataPartition(Y, p = 0.70, list = FALSE)
+#'trainingSetX <- X[trainingIndices, ]
+#'trainingSetY <- Y[trainingIndices]
+#'testSetX <- X[-trainingIndices, ]
+#'testSetY <- Y[-trainingIndices]
+#'rdtDP <- DPRandomDecisionTreeClassifier(Y = trainingSetY, X = trainingSetX,
+#'height = 4, numTrees = 5, epsilon = 0.8)
+#'predictions <- predict(rdtDP, testSetX)
+#'accuracy <- sum(predictions == testSetY) / length(testSetY)
+#'
 predict.DPRandomDecisionTreeClassifier <- function(object, testSetX = NULL, ...){
 
   trees <- object$trees
 
   predictOneData <- function(data){
-    countsByClass <- lapply(trees, function(tree){sapply(tree$getCounter(data), function(x){laplace(x,1,NULL)})})
+    countsByClass <- lapply(trees, function(tree){sapply(tree$getCounter(data), function(x){laplace(x,1,object$epsilon)})})
     countsByClass <- Reduce("+", countsByClass)
     probabilities <- countsByClass / sum(countsByClass)
     prediction <- object$classLabels[which.max(probabilities)]
   }
 
   apply(testSetX, 1, predictOneData)
-}
-
-
-test <- function(){
-
-  #Toy example, remove later
-
-  A <- c('1','0','1','0','1','1','1','0')
-  B <- c('0','0','0','1','1','1','0','0')
-  C <- c('1','1','0','0','1','1','1','1')
-  D <- c('0','0','0','0','0','0','0','1')
-  E <- c('0','0','0','1','0','1','1','0')
-  Y <-c('T','F','T','F','T','F','T','T')
-  X <- as.data.frame(cbind(A,B,C,D,E))
-
-  library(caret)
-  data(BreastCancer)
-
-  fullY <- BreastCancer[, 11]
-  fullX <- BreastCancer[, 2:10]
-
-  trainingIndices <-createDataPartition(fullY, p = 0.70, list = FALSE)
-  trainingSetX <- fullX[trainingIndices, ]
-  trainingSetY <- fullY[trainingIndices]
-  testSetX <- fullX[-trainingIndices, ]
-  testSetY <- fullY[-trainingIndices]
-
-  rdtDP <- DPRandomDecisionTreeClassifier(Y = trainingSetY, X = trainingSetX,
-                                          height = 4, numTrees = 10)
-
-  predictions <- predict(rdtDP, testSetX)
-  accuracy <- sum(predictions == testSetY) / length(testSetY)
-
 }
 
 
