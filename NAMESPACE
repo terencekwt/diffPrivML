@@ -2,9 +2,11 @@
 
 S3method(predict,DPNaiveBayesClassifier)
 S3method(predict,DPRandomDecisionTreeClassifier)
+export(DPLogisticRegressionClassifier)
 export(DPNaiveBayesClassifier)
 export(DPRandomDecisionTreeClassifier)
 import(caret)
 importFrom(R6,R6Class)
+importFrom(glmnet,glmnet)
 importFrom(stats,dnorm)
 importFrom(stats,rexp)
