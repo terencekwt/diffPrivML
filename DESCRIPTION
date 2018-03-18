@@ -12,5 +12,6 @@ LazyData: true
 RoxygenNote: 6.0.1
 Imports: R6, caret
 Suggests: knitr,
-    rmarkdown
+    rmarkdown,
+    testthat
 VignetteBuilder: knitr

@@ -17,7 +17,7 @@ RandomDecisionTree <- R6::R6Class("RandomDecisionTree",
       #don't pick any that is already used in earlier nodes
       private$chosen <- predictors[sample(length(predictors),1)]
 
-      if(length(levelsX) - length(predictors) < private$height) {
+      if(length(levelsX) - length(predictors) + 1 < private$height) {
         remaining <- predictors[predictors != private$chosen]
         chosenLevels <- private$levelsX[[private$chosen]]
 
@@ -38,6 +38,8 @@ RandomDecisionTree <- R6::R6Class("RandomDecisionTree",
         # this is a leaf
         private$children <- NULL
       }
+      # each leaf node will keep tally of each training data that ends up
+      # there, and count the respective class of the training data
       private$counter <- rep(0, length(private$levelsY))
       names(private$counter) <- private$levelsY
     },
@@ -100,12 +102,13 @@ RandomDecisionTree <- R6::R6Class("RandomDecisionTree",
 #'@param epsilon privacy budget in epsilon-differential private procedure
 #'@param mechanism function for DF (i.e. Laplace, Gaussian)
 #'@param numTrees # of trees to grow in the ensemble, default is 5
-#'@param height the maxinum height of each decision tree
+#'@param height the maxinum height of each decision tree, default is # of
+#'predictors in X, divided by 2. i.e. floor(ncol(X)/2)
 #'
 #'@export
 #'
 DPRandomDecisionTreeClassifier <- function(Y, X, epsilon = NULL, mechanism = NULL,
-                                           numTrees = 5, height = ncol(X)/2){
+                                           numTrees = 5, height = floor(ncol(X)/2)){
 
   #for each predictor and also the resonse, keep track of the cardinalities
   #so we can use them for branching in decision tree
@@ -197,7 +200,7 @@ test <- function(){
   testSetY <- fullY[-trainingIndices]
 
   rdtDP <- DPRandomDecisionTreeClassifier(Y = trainingSetY, X = trainingSetX,
-                                          height = 3, numTrees = 5)
+                                          height = 4, numTrees = 10)
 
   predictions <- predict(rdtDP, testSetX)
   accuracy <- sum(predictions == testSetY) / length(testSetY)
