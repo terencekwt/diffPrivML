@@ -1,4 +1,4 @@
-#TODO should be in its own class later
+#TODO should be in its own class later (put together in the noiseFunction.R?)
 add.output.noise <- function(n,d,lambda,epsilon){
   dir = rnorm(d)
   dir = dir/ sqrt(sum(dir^2))
