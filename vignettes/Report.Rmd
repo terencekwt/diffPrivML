@@ -22,39 +22,85 @@ Therefore, we developed a R package, **diffPrivML**, that aims to put these diff
 
 ## Overview of package
 
-The **diffPrivML** package consists of a library of classifiers, each with differential privacy supported.
+The **diffPrivML** package consists of a library of classifiers implemented as S3 classes, each with differential privacy supported.
 
 * DPNaiveBayesClassifier 
 * DPRandomDecisionTreeClassifier
 * DPLogisticRegressionClassifier 
 
-For example, to fit a model of *DPNaiveBayesClassifier*, the privacy budget can be specified as part of the input.
+For example, to fit a model of **DPNaiveBayesClassifier**, the privacy budget can be specified as part of the input.
 
 ```{r, eval=FALSE}
 naiveBayesDP <- DPNaiveBayesClassifier(y = trainingSetY, x = trainingSetX, epsilon = 0.05)
 ```
-One deviation from the original proposal to support a neural network based classifier is that it is not straightforward to ship a canned DF enhanced neural network classifier out of the box. Neural networks requires specific configurations to first construct the neural network (this is before any training is done), and the differential privacy parameters have to be customized as well based on the network constructed.
+
+The model is fitted with the training data input when the classifier object is instantiated.
+
+Each classifier also has its standard ML methods such as **summary()** and **predict()**.
+
+One slight deviation from the original project proposal to also support a neural network based classifier is that it is not straightforward to ship a canned DF enhanced neural network classifier out of the box. Neural networks can be higly customized to first construct the neural network configuration (this is before any training is done), and so the differential privacy parameters have to be customized as well based on the network constructed.
 
 ## Motivating Example
 
-It is easy to visualize what kind of data loss a summary would leak in a database. It it not as easy to understand in a ML ouput model.
+It is trivial to capture what kind of privacy data loss a summary query would leak in a database system. For example, a pair of queries like **SELECT SUM(salary)** and **SELECT SUM(salary) WHERE name != ‘Terence Tam’** would do the trick. An adversary just observe the difference between the two results and be able to deduce the individual salary of "Terence Tam".
 
-Suppose we have build a decision tree like so.
+However, when it comes to the output of a machine learning model, it is not so straightforward as the "summary" returned is rather complex. In addition, understanding in the context of privacy loss the difference between how two training data sets that differs only by one datapoint can lead to two differently trained models is also nontrivial.
 
-## Use cases
+To be able to demonstrate this, I will use the **DPRandomDecisionTreeClassifier** in this package as a primer. The advantage of decision tree is that it can be served as a good visualization of the output space created by the model. 
 
-Our use cases are mainly supported for classification tasks.
+Suppose we have some synthetic data points like so
 
-### Random Decision Tree Ensembles Classifier
+```{r}
+A <- c('0','1')
+B <- c('1','0')
+class <- c("Y","N")
+syntheticData <- as.data.frame(cbind(A, B, class))
+head(syntheticData)
+```
 
-First, let's invoke the library.
+A and B are predictors and class is the label of the data points. This is an extreme case where the whole dataset only have two data points, and knowing the output of the classifier would definitely leads to privacy loss.
 
 ```{r}
 library(diffPrivML)
+set.seed(777)
+rdtDP <- DPRandomDecisionTreeClassifier(Y = syntheticData[,3], X = syntheticData[,1:2], height = 2, numTrees = 1)
+rdtDP$trees[[1]]$printTree()
+```
+```{r}
+experiment <- function(){
+  rdtDP <- DPRandomDecisionTreeClassifier(Y = syntheticData[,3], X = syntheticData[,1:2], height = 2, numTrees = 1)
+  predictions <- predict(rdtDP, syntheticData[,1:2])
+  accuracy <- sum(predictions == syntheticData[,3]) / length(syntheticData[,3])
+  accuracy
+}
+hist(replicate(100, experiment()))
+```
+
+And now with a stricter differential privacy budget
+
+```{r}
+experiment <- function(){
+  rdtDP <- DPRandomDecisionTreeClassifier(Y = syntheticData[,3], X = syntheticData[,1:2], height = 2, numTrees = 1, epsilon = 0.005)
+  predictions <- predict(rdtDP, syntheticData[,1:2])
+  accuracy <- sum(predictions == syntheticData[,3]) / length(syntheticData[,3])
+  accuracy
+}
+hist(replicate(100, experiment()))
+```
+
+## Use cases
+
+Now that we have prove the functionality of differential privacy budget, we can dive into actual use cases that can be supported in this package. **diffPrivML** is mainly supported for classification tasks.
+
+### Random Decision Tree Ensemble Classifier
+
+First, let's invoke the caret library, just for the sake that it can cleanly partitiotn training vs test data for us.
+
+```{r}
 library(caret)
 ```
 
-Then, let's use a dataset preloaded in the diffPrivML package. I picked health record as that is the quintessential example of data that are sensitive. 
+Then, let's use a health dataset, **BreastCancer**, preloaded in the diffPrivML package. I picked health record as that is the quintessential example of data that are sensitive. 
 
 ```{r, df_print: paged}
 data(BreastCancer)
@@ -78,8 +124,10 @@ rdtDP <- DPRandomDecisionTreeClassifier(Y = trainingSetY, X = trainingSetX,
 
 predictions <- predict(rdtDP, testSetX)
 accuracy <- sum(predictions == testSetY) / length(testSetY)
-accuracy
+paste("The test set accuracy rate is", accuracy * 100, "%")
 ```
+
+Again, end user can tweak parameters like depth of trees and number of trees in ensembles to boost the model performance.
 
 ### Naive Bayes Classifier
 
