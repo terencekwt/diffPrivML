@@ -7,6 +7,15 @@
 \method{predict}{DPLogisticRegressionClassifier}(object, predictX = NULL,
   type = c("classes", "probabilities"), ...)
 }
+\arguments{
+\item{object}{the classifier object for this predict method}
+
+\item{predictX}{a data frame in which to look for variables with which to predict. If omitted, data used for model fitting will be used}
+
+\item{type}{the type of prediction. Can be either classes or probabilities}
+
+\item{...}{not applicable for this class}
+}
 \description{
 predict of logistic regression
 }
@@ -18,4 +27,7 @@ lrClassifier = DPLogisticRegressionClassifier(y,x,lambda = 1, alpha = 0, epsilon
 summary(lrClassifier)
 result = predict(lrClassifier,type = "classes")
 table(result,y)
+}
+\author{
+Yifan Gong
 }

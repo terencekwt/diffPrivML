@@ -6,6 +6,11 @@
 \usage{
 \method{summary}{DPLogisticRegressionClassifier}(object, ...)
 }
+\arguments{
+\item{object}{the classifier object for this predict method}
+
+\item{...}{not applicable for this class}
+}
 \description{
 summary of logistic regression
 }
@@ -15,4 +20,7 @@ x = as.matrix(iris[,1:4])
 y = ifelse( iris$Species=="setosa", 1,0 )
 lrClassifier = DPLogisticRegressionClassifier(y,x,lambda = 1, alpha = 0, epsilon = 1)
 summary(lrClassifier)
+}
+\author{
+Yifan Gong
 }

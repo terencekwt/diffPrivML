@@ -16,8 +16,8 @@ Suggests: knitr,
     testthat
 VignetteBuilder: knitr
 Collate: 
-    'DPLogisticRegressionClassifier.R'
     'noiseFunctions.R'
+    'DPLogisticRegressionClassifier.R'
     'DPNaiveBayesClassifier.R'
     'DPRandomDecisionTreeClassifier.R'
     'datasets.R'

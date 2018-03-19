@@ -1,10 +1,5 @@
-#TODO should be in its own class later (put together in the noiseFunction.R?)
-add.output.noise <- function(n,d,lambda,epsilon){
-  dir = rnorm(d)
-  dir = dir/ sqrt(sum(dir^2))
-  noise = 2/(epsilon*lambda*n) * sum(rexp(d, 1)) * dir
-  return(noise)
-}
+#' @include noiseFunctions.R
+NULL
 
 #'Implementation of DPLogisticRegressionClassifier. An S3 class.
 #'
@@ -34,7 +29,7 @@ DPLogisticRegressionClassifier <- function(y, x, lambda, alpha, epsilon = 0){
   model <- glmnet(x, y, family = ("binomial"),alpha=0, lambda = 1)
   param.out <- as.matrix(coef(model))
   if(epsilon>0){
-    noise <- add.output.noise(n,d,lambda,epsilon)
+    noise <- outputNoise(n,d,lambda,epsilon)
     param.out <- param.out + noise
   }
 
