@@ -147,7 +147,7 @@ DPRandomDecisionTreeClassifier <- function(Y, X, epsilon = NULL, mechanism = NUL
 #'
 #'@export
 #'
-summary.DPNaiveBayesClassifier <- function(object, ...) {
+summary.DPRandomDecisionTreeClassifier <- function(object, ...) {
   cat("## # of trees", length(object$trees), "\n\n")
   cat("## class labels:", object$classLabels, "\n\n")
 }

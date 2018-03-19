@@ -193,7 +193,7 @@ Then invoke the **DPNaiveBayesClassifier**, and also get the summary of the mode
 
 ```{r}
 naiveBayesDP <- DPNaiveBayesClassifier(trainingSetY, trainingSetX, epsilon = 0.7)
-#summary(naiveBayesDP)
+summary(naiveBayesDP)
 ```
 Then try to predict the test data set like so.
 
