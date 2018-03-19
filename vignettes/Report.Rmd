@@ -38,80 +38,11 @@ The model is fitted with the input training data when the classifier object gets
 
 Each classifier in **diffPrivML** also has all the standard ML methods such as **summary()** and **predict()**. So far, all the ML algorithms in this package uses output perturbation methods for enforcing differential privacy.  
 
+All unit tests are in **/tests** directory.
+
 One slight deviation from the original project proposal to also support neural network based classifier is that it is not straightforward to ship a default DF enhanced neural network classifier out of the box. Neural networks can be higly customized to first construct the neural network configuration (this is even before any training is done), and so the differential privacy parameters have to be customized as well based on the network constructed.
 
-## Motivating Example - Proof of differential privacy
-
-It is trivial to capture what kind of privacy data loss a summary query would leak in a database system. For example, a pair of queries like **SELECT SUM(salary)** and **SELECT SUM(salary) WHERE name != ‘Terence Tam’** would do the trick. An adversary just observe the difference between the two results and be able to deduce the individual salary of "Terence Tam".
-
-However, when it comes to the output of a machine learning model, it is not so straightforward as the "summary" returned is rather complex. In addition, understanding in the context of privacy loss the difference between how two training data sets that differs only by one datapoint can lead to two differently trained models is also nontrivial.
-
-To be able to demonstrate this, I will use the **DPRandomDecisionTreeClassifier** in this package as a primer. The advantage of decision tree is that it can be served as a good visualization of the output space created by the model. 
-
-Suppose we have some synthetic data set that looks like this
-
-```{r}
-A <- c('0','1','1')
-B <- c('1','0','0')
-class <- c("Y","N","N")
-syntheticData <- as.data.frame(cbind(A, B, class))
-head(syntheticData)
-```
-
-A and B are predictors and class is the label for the data points. This is an extreme case where the whole training dataset only have three data points. Notice how the data points are very orthogonal and mutually exclusive, where class == 'Y' only when B == '1'. Therefore, in this toy example, knowing exactly the output of the classifier would definitely give inference on what data points are used in the training set, leading to privacy loss.
-
-Suppose we run a non-private random decision tree classifier with the three data points as input like so.
-
-```{r}
-library(diffPrivML)
-set.seed(50) #for reproducibility
-rdtDP <- DPRandomDecisionTreeClassifier(Y = syntheticData[,3], X = syntheticData[,1:2], height = 2, numTrees = 1)
-```
-
-When epsilon is not specified in our DP classifier, that will default to non-private algorithm (in a sense, that means epsilon is infinite). Also here, explicitly setting numTree = 1 so we only have 1 tree in our classifer for sake of discussion.
-
-The generated decision tree is below.
-```{r}
-rdtDP$trees[[1]]$printTree()
-```
-
-Note the RDT tree is unpruned. Now suppose we train the classifer 100 times, it is with certainty that with the data point, the predicted output is the same.
-
-```{r}
-experiment <- function(){
-  rdtDP <- DPRandomDecisionTreeClassifier(Y = syntheticData[,3], X = syntheticData[,1:2], height = 2, numTrees = 1,)
-  predict(rdtDP, syntheticData[1,1:2])
-}
-table(replicate(100, experiment()))
-```
-
-Now let's suppose we are limiting privacy budget, and then try compare the two models.
-
-With data point
-
-```{r}
-experiment <- function(){
-  rdtDP <- DPRandomDecisionTreeClassifier(Y = syntheticData[,3], X = syntheticData[,1:2], height = 2, numTrees = 1, , epsilon = 0.005)
-  predict(rdtDP, syntheticData[1,1:2])
-}
-table(replicate(100, experiment()))
-```
-
-Without data point
-
-```{r}
-experiment <- function(){
-  rdtDP <- DPRandomDecisionTreeClassifier(Y = syntheticData[-1,3], X = syntheticData[-1,1:2], height = 2, numTrees = 1, epsilon = 0.005)
-  predict(rdtDP, syntheticData[1,1:2])
-}
-table(replicate(100, experiment()))
-```
-
-So the two models become more "alike" and the adversary can't guess which dataset is actually used for each output.
-
 ## Use cases
-
-Now that we have establish the functionality of differential privacy budget, we can dive into actual use cases that can be supported in this package. **diffPrivML** is mainly supported for classification tasks.
 
 ### Random Decision Tree Ensemble Classifier
 
@@ -119,6 +50,8 @@ First, let's invoke the caret library, just for the sake that it can cleanly par
 
 ```{r}
 library(caret)
+library(diffPrivML)
+set.seed(50) # for reproducibility
 ```
 
 Then, let's use the categorical health dataset **BreastCancer** preloaded in the diffPrivML package. We picked health records as that is the quintessential data that needs privatization!
@@ -224,6 +157,75 @@ ggplot(data=df, aes(x=epsilon, y=accuracy, group=1)) +
   geom_line() +
   geom_point() +
   scale_size_area()
+```
+
+## Synthetic Data - Proof of differential privacy
+
+It is trivial to capture what kind of privacy data loss a summary query would leak in a database system. For example, a pair of queries like **SELECT SUM(salary)** and **SELECT SUM(salary) WHERE name != ‘Terence Tam’** would do the trick. An adversary just observe the difference between the two results and be able to deduce the individual salary of "Terence Tam".
+
+However, when it comes to the output of a machine learning model, it is not so straightforward as the "summary" returned is rather complex. In addition, understanding in the context of privacy loss the difference between how two training data sets that differs only by one datapoint can lead to two differently trained models is also nontrivial.
+
+To be able to demonstrate this, I will use the **DPRandomDecisionTreeClassifier** again in this package. The advantage of decision tree is that it can be served as a good visualization of the output space created by the model. 
+
+Decision trees are built where each predictor is a node, and each branch is one of the level of the predictor.
+
+Suppose we have some synthetic data set that looks like this
+
+```{r}
+A <- c('0','1','1')
+B <- c('1','0','0')
+class <- c("Y","N","N")
+syntheticData <- as.data.frame(cbind(A, B, class))
+head(syntheticData)
+```
+
+A and B are predictors and class is the label for the data points. This is an extreme case where the whole training dataset only have three data points. Notice how the data points are very orthogonal and mutually exclusive, where class == 'Y' only when B == '1'. Therefore, in this toy example, knowing exactly the output of the classifier would definitely give inference on what data points are used in the training set, leading to privacy loss.
+
+Suppose we run a non-private random decision tree classifier with the three data points as input like so.
+
+```{r}
+rdtDP <- DPRandomDecisionTreeClassifier(Y = syntheticData[,3], X = syntheticData[,1:2], height = 2, numTrees = 1)
+```
+
+When epsilon is not specified in our DP classifier, that will default to non-private algorithm (in a sense, that means epsilon is infinite). Also here, explicitly setting numTree = 1 so we only have 1 tree in our classifer for sake of discussion.
+
+
+
+Note the RDT tree is unpruned. Now suppose we train the classifer 100 times, it is with certainty that with the data point, the predicted output is the same.
+
+```{r}
+experiment <- function(epsilon){
+  rdtDP <- DPRandomDecisionTreeClassifier(Y = syntheticData[,3], X = syntheticData[,1:2], 
+                                          height = 2, numTrees = 1, epsilon = epsilon)
+  predict(rdtDP, syntheticData[1,1:2])
+}
+table(replicate(100, experiment(NULL)))
+```
+
+Now let's suppose we are limiting privacy budget, and then try compare the two models.
+
+With data point
+
+```{r}
+table(replicate(100, experiment(epsilon = 0.005)))
+```
+
+Without data point
+
+```{r}
+experiment <- function(){
+  rdtDP <- DPRandomDecisionTreeClassifier(Y = syntheticData[-1,3], X = syntheticData[-1,1:2], height = 2, numTrees = 1, epsilon = 0.005)
+  predict(rdtDP, syntheticData[1,1:2])
+}
+table(replicate(100, experiment()))
+```
+
+So the two models become more "alike" and the adversary can't guess which dataset is actually used for each output.
+
+The generated decision tree is below.
+```{r}
+#dtDP1$trees[[1]]$printTree()
+#rdtDP2$trees[[1]]$printTree()
 ```
 
 ## Contributions
