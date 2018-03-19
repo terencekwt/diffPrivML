@@ -9,7 +9,7 @@ test_that("the dimensions of the output are correct", {
   naiveBayesDP <- DPNaiveBayesClassifier(y = Y, x = X)
 
   #items belonging to the class objects
-  expect_equal(length(naiveBayesDP), 3)
+  expect_equal(length(naiveBayesDP), 4)
 
   #likelihood calculation table per attribute in X
   expect_equal(length(naiveBayesDP$likelihoods), 2)
