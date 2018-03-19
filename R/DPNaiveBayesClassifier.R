@@ -64,10 +64,23 @@ DPNaiveBayesClassifier <- function(y, x, epsilon = NULL, mechanism = NULL){
   return(self)
 }
 
+#'S3 method for summary.
+#'
+#'@author Terence Tam
+#'
+#'@param object the classifier object for this predict method
+#'@param ... not applicable for this class
+#'
+#'@export
+#'
+#'@examples
+#'data(iris)
+#'y <- iris[, 5]
+#'x <- iris[, 1:4]
+#'naiveBayesDP <- DPNaiveBayesClassifier(y, x)
+#'summary(naiveBayesDP)
+#'
 summary.DPNaiveBayesClassifier <- function(object, ...) {
-
-  NextMethod()
-  #stopifnot(inherits(x, "DPNaiveBayesClassifier"))
   cat("## Class labels:", object$classLabels, "\n\n")
   cat("## Prior probabilites:", object$priorProb, "\n\n")
   cat("## Likelihoods", "\n")
@@ -75,11 +88,6 @@ summary.DPNaiveBayesClassifier <- function(object, ...) {
     cat("## ")
     print(l)
   }
-}
-
-summary.DPClassifier <- function(object, ...) {
-  cat("Ouputting the trained model of differential private classifer \n\n")
-  invisible(object)
 }
 
 #'S3 method for predict

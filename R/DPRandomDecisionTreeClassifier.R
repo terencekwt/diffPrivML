@@ -138,6 +138,20 @@ DPRandomDecisionTreeClassifier <- function(Y, X, epsilon = NULL, mechanism = NUL
   return(self)
 }
 
+#'S3 method for summary.
+#'
+#'@author Terence Tam
+#'
+#'@param object the classifier object for this predict method
+#'@param ... not applicable for this class
+#'
+#'@export
+#'
+summary.DPNaiveBayesClassifier <- function(object, ...) {
+  cat("## # of trees", length(object$trees), "\n\n")
+  cat("## class labels:", object$classLabels, "\n\n")
+}
+
 #'S3 method for predict
 #'
 #'@author Terence Tam

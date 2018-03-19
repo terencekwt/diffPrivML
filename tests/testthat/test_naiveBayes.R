@@ -29,7 +29,6 @@ test_that("error is thrown for bad input", {
   #one extra element
   Y <-c('T','F','T','F','T','F','T','T','F')
 
-  #items belonging to the class objects
   expect_error(DPNaiveBayesClassifier(y = Y, x = X),
                "ERROR: The predictors x and class labels y have unequal lengths.",
                fixed = TRUE)
