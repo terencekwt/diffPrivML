@@ -148,8 +148,9 @@ DPRandomDecisionTreeClassifier <- function(Y, X, epsilon = NULL, mechanism = NUL
 #'@export
 #'
 summary.DPRandomDecisionTreeClassifier <- function(object, ...) {
+  cat("## Class labels:", object$classLabels, "\n\n")
+  cat("## Privacy budget:", object$epsilon, "\n\n")
   cat("## # of trees", length(object$trees), "\n\n")
-  cat("## class labels:", object$classLabels, "\n\n")
 }
 
 #'S3 method for predict
