@@ -51,6 +51,7 @@ DPLogisticRegressionClassifier <- function(y, x, lambda, alpha, epsilon = 0){
   self <- list(a0 = param.out[1,1],
                beta = param.out[2:d,1],
                lambda = lambda,
+               epsilon = epsilon,
                classnames = model$classnames,
                x = x,
                y = y
@@ -77,10 +78,13 @@ DPLogisticRegressionClassifier <- function(y, x, lambda, alpha, epsilon = 0){
 #'epsilon = 1)
 #'summary(lrClassifier)
 summary.DPLogisticRegressionClassifier <- function(object, ...){
-  cat("## a0:", object$a0, "\n")
-  cat("## beta:", object$beta, "\n")
-  cat("## classnames:", object$classnames, "\n")
-  #cat("## call:", object$call, "\n")
+  cat("## Class labels:", object$classnames, "\n\n")
+  cat("## Privacy budget:", object$epsilon, "\n\n")
+  cat("## Coefficients(a0):", object$a0, "\n\n")
+  cat("## Coefficients(beta):", "\n")
+  for (i in 1:length(object$beta)) {
+    cat("## ",names(object$beta)[i],object$beta[i],"\n")
+  }
 }
 
 #'predict of logistic regression
@@ -108,23 +112,28 @@ predict.DPLogisticRegressionClassifier <- function(object,
                                                    type = c("classes",
                                                             "probabilities"),
                                                    ...){
-  if(! type %in% c("classes", "probabilities")){
-    stop("ERROR: Need to specify the type of the predictions. It can either
-         be classes or probabilities")
+  if(!exists(type) || type %in% c("classes", "probabilities")){
+    stop("ERROR: Need to specify the type of the predictions. It can either be classes or probabilities")
   }
   coefficients <- as.matrix(c(object$a0,object$beta))
   if (is.null(predictX)){
     x_in <- cbind(1,object$x)
-  }else{x_in <- cbind(1,predictX)}
+  }
+  else{
+    x_in <- cbind(1,predictX)
+    }
   if(dim(x_in)[2] != dim(coefficients)[1]) {
-    stop("ERROR: The number of predictors used for model training doesn't
-         match with predictX")
+    stop("ERROR: The number of predictors used for model training doesn't match with predictX")
   }
   probabilities <- as.vector(1/(1 + exp(-(x_in %*% coefficients))))
   classes <- factor((probabilities > 0.5) + 1)
   levels(classes) <- levels(object$y)
-  if(type == "classes") return(classes)
-  else return(probabilities)
+  if(type == "classes") {
+    return(classes)
+    }
+  else {
+    return(probabilities)
+    }
 }
 
 

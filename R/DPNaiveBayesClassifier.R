@@ -58,7 +58,7 @@ DPNaiveBayesClassifier <- function(y, x, epsilon = NULL, mechanism = NULL){
     }, simplify = FALSE)
 
   self <- list(likelihoods = likelihoods, priorProb = priorProb,
-       classLabels = classLabels)
+       classLabels = classLabels, epsilon = epsilon)
 
   class(self) <- c("DPNaiveBayesClassifier", "DPClassifier", class(self))
   return(self)
@@ -82,6 +82,7 @@ DPNaiveBayesClassifier <- function(y, x, epsilon = NULL, mechanism = NULL){
 #'
 summary.DPNaiveBayesClassifier <- function(object, ...) {
   cat("## Class labels:", object$classLabels, "\n\n")
+  cat("## Privacy budget:", object$epsilon, "\n\n")
   cat("## Prior probabilites:", object$priorProb, "\n\n")
   cat("## Likelihoods", "\n")
   for (l in object$likelihoods) {
