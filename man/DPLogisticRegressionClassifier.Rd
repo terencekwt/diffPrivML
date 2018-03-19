@@ -26,7 +26,7 @@ Implementation of DPLogisticRegressionClassifier. An S3 class.
 \examples{
 data(iris)
 x = as.matrix(iris[,1:4])
-y = ifelse( iris$Species=="setosa", 1,0 ) 
+y = ifelse( iris$Species=="setosa", 1,0 )
 lrClassifier = DPLogisticRegressionClassifier(y,x,lambda = 1, alpha = 0, epsilon = 1)
 
 }

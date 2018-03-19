@@ -17,7 +17,8 @@ add.output.noise <- function(n,d,lambda,epsilon){
 #'@param epsilon privacy budget in epsilon-differential private procedure
 #'
 #'@return a classifier object
-#'@importFrom glmnet glmnet coef
+#'@importFrom glmnet glmnet
+#'@importFrom stats coef
 #'@export
 #'
 #'@examples
@@ -50,6 +51,10 @@ DPLogisticRegressionClassifier <- function(y, x, lambda, alpha, epsilon = 0){
 }
 
 
+#'summary of logistic regression
+#'
+#'@export
+#'
 #'@examples
 #'data(iris)
 #'x = as.matrix(iris[,1:4])
@@ -67,6 +72,10 @@ summary.DPLogisticRegressionClassifier <- function(object, ...){
 }
 
 
+#'predict of logistic regression
+#'
+#'@export
+#'
 #'@examples
 #'data(iris)
 #'x = as.matrix(iris[,1:4])
@@ -75,7 +84,7 @@ summary.DPLogisticRegressionClassifier <- function(object, ...){
 #'summary(lrClassifier)
 #'result = predict(lrClassifier,type = "classes")
 #'table(result,y)
-predict.DPLogisticRegressionClassifier <- function(object, predictX = NULL, type = c("classes","probabilities")){
+predict.DPLogisticRegressionClassifier <- function(object, predictX = NULL, type = c("classes","probabilities"), ...){
   coefficients <- as.matrix(c(object$a0,object$beta))
   print(coefficients)
   if (is.null(predictX)){
