@@ -53,6 +53,10 @@ DPLogisticRegressionClassifier <- function(y, x, lambda, alpha, epsilon = 0){
 
 #'summary of logistic regression
 #'
+#'@author Yifan Gong
+#'
+#'@param object the classifier object for this predict method
+#'@param ... not applicable for this class
 #'@export
 #'
 #'@examples
@@ -74,6 +78,12 @@ summary.DPLogisticRegressionClassifier <- function(object, ...){
 
 #'predict of logistic regression
 #'
+#'@author Yifan Gong
+#'
+#'@param object the classifier object for this predict method
+#'@param predictX a data frame in which to look for variables with which to predict. If omitted, data used for model fitting will be used
+#'@param type the type of prediction. Can be either classes or probabilities
+#'@param ... not applicable for this class
 #'@export
 #'
 #'@examples
