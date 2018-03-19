@@ -3,19 +3,20 @@ Title: Library of machine learning workflow enhanced with differential privacy
 Version: 0.0.0.9000
 Authors@R: c(
     person("Terence", "Tam", email = "terencet@stanford.edu", role = c("aut", "cre")),
-    person("Eva", "Gong", email = "first.last@example.com", role = c("aut")))
+    person("Yifan", "Gong", email = "yifan.gong717@gmail.com", role = c("aut")))
 Description: What the package does (one paragraph).
 Depends: R (>= 3.4.3)
 License: file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
-Imports: R6, caret
+Imports: R6, caret, glmnet
 Suggests: knitr,
     rmarkdown,
     testthat
 VignetteBuilder: knitr
 Collate: 
+    'DPLogisticRegressionClassifier.R'
     'noiseFunctions.R'
     'DPNaiveBayesClassifier.R'
     'DPRandomDecisionTreeClassifier.R'
