@@ -2,7 +2,7 @@
 % Please edit documentation in R/DPRandomDecisionTreeClassifier.R
 \name{predict.DPRandomDecisionTreeClassifier}
 \alias{predict.DPRandomDecisionTreeClassifier}
-\title{S3 method for predict}
+\title{S3 method for DPRandomDecisionTreeClassifier's predict}
 \usage{
 \method{predict}{DPRandomDecisionTreeClassifier}(object, testSetX = NULL, ...)
 }
@@ -14,7 +14,7 @@
 \item{...}{not applicable for this class}
 }
 \description{
-S3 method for predict
+S3 method for DPRandomDecisionTreeClassifier's predict
 }
 \examples{
 library(caret)

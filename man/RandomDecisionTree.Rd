@@ -11,9 +11,8 @@ at each branch is done randomly, unlike other criterion based CART trees.}
 RandomDecisionTree
 }
 \description{
-This is a factory generator for a RandomDecisionTree R6 class object.
-A RandomDeciscionTree, RDT, is a type of decision tree where the partitioning
-at each branch is done randomly, unlike other criterion based CART trees.
+To grow a tree, a RandomDecisionTree object can have children pointers to
+other RandomDecisionTree objects.
 }
 \author{
 Terence Tam

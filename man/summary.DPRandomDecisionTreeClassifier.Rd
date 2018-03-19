@@ -2,7 +2,7 @@
 % Please edit documentation in R/DPRandomDecisionTreeClassifier.R
 \name{summary.DPRandomDecisionTreeClassifier}
 \alias{summary.DPRandomDecisionTreeClassifier}
-\title{S3 method for summary.}
+\title{S3 method for DPRandomDecisionTreeClassifier's summary}
 \usage{
 \method{summary}{DPRandomDecisionTreeClassifier}(object, ...)
 }
@@ -12,7 +12,7 @@
 \item{...}{not applicable for this class}
 }
 \description{
-S3 method for summary.
+S3 method for DPRandomDecisionTreeClassifier's summary
 }
 \author{
 Terence Tam

@@ -17,8 +17,9 @@ summary of logistic regression
 \examples{
 data(iris)
 x = as.matrix(iris[,1:4])
-y = ifelse( iris$Species=="setosa", 1,0 )
-lrClassifier = DPLogisticRegressionClassifier(y,x,lambda = 1, alpha = 0, epsilon = 1)
+y = factor(iris$Species=="setosa")
+lrClassifier = DPLogisticRegressionClassifier(y,x,lambda = 1, alpha = 0,
+epsilon = 1)
 summary(lrClassifier)
 }
 \author{

@@ -2,19 +2,19 @@
 % Please edit documentation in R/DPRandomDecisionTreeClassifier.R
 \name{DPRandomDecisionTreeClassifier}
 \alias{DPRandomDecisionTreeClassifier}
-\title{Implementation of DPRandomDecisionTreeClassifier. An S3 class.}
+\title{Implementation of DPRandomDecisionTreeClassifier (S3 class). This is a model that
+creates an ensemble of Random Decision Trees for classification.}
 \usage{
-DPRandomDecisionTreeClassifier(Y, X, epsilon = NULL, mechanism = NULL,
-  numTrees = 5, height = floor(ncol(X)/2))
+DPRandomDecisionTreeClassifier(Y, X, epsilon = NULL, numTrees = 5,
+  height = floor(ncol(X)/2))
 }
 \arguments{
 \item{Y}{a named vector of outcome labels}
 
 \item{X}{a data frame with named predictor columns}
 
-\item{epsilon}{privacy budget in epsilon-differential private procedure}
-
-\item{mechanism}{function for DF (i.e. Laplace, Gaussian)}
+\item{epsilon}{privacy budget in epsilon-differential private procedure.
+default is non-private.}
 
 \item{numTrees}{# of trees to grow in the ensemble, default is 5}
 
@@ -22,7 +22,8 @@ DPRandomDecisionTreeClassifier(Y, X, epsilon = NULL, mechanism = NULL,
 predictors in X, divided by 2. i.e. floor(ncol(X)/2)}
 }
 \description{
-Implementation of DPRandomDecisionTreeClassifier. An S3 class.
+Implementation of DPRandomDecisionTreeClassifier (S3 class). This is a model that
+creates an ensemble of Random Decision Trees for classification.
 }
 \author{
 Terence Tam
