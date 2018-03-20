@@ -67,7 +67,7 @@ Now let's actually split the BreastCancer data into training set and test set, a
 Y <- BreastCancer[, 11]
 X <- BreastCancer[, 2:10]
 
-trainingIndices <-createDataPartition(Y, p = 0.70, list = FALSE)
+trainingIndices <- createDataPartition(Y, p = 0.70, list = FALSE)
 trainingSetX <- X[trainingIndices, ]
 trainingSetY <- Y[trainingIndices]
 testSetX <- X[-trainingIndices, ]
@@ -118,12 +118,11 @@ Just like the previous classifier, the same is true for **DPNaiveBayesClassifier
 data(iris)
 y <- iris[, 5]
 x <- iris[, 1:4]
-trainingIndices <-createDataPartition(y, p = 0.70, list = FALSE)
+trainingIndices <- createDataPartition(y, p = 0.70, list = FALSE)
 trainingSetX <- x[trainingIndices, ]
 trainingSetY <- y[trainingIndices]
 testSetX <- x[-trainingIndices, ]
 testSetY <- y[-trainingIndices]
-
 ```
 
 Then invoke the **DPNaiveBayesClassifier**, and also get the summary of the model fitted.
@@ -158,6 +157,56 @@ ggplot(data=df, aes(x=epsilon, y=accuracy, group=1)) +
   geom_point() +
   scale_size_area()
 ```
+
+### Logistic Regression Classifier
+
+Logistic regression is a type of model for binary classification problems. Karalikta et al. (2011) described an output pertubation mechanism that's applicable to regularized logistic regression classifiers. This package implements that mechanism via first calling package `glmnet` to get the weights that minimize the loss, and then adding noise subject to the privacy budget and regularization parameter. We would also like to credit our noise function to Staal A. Vinterbo and his R package `PrivateLR`. Unlike `PrivateLR` which built the logistic regression model from scratch, we use `glmnet` for the weights and enable two regularization techniques: ridge and lasso.
+
+Just like previous classifiers, **DPLogisticRegressionClassifier** requires a dataset as input.
+```{r}
+data(iris)
+y <- factor(iris$Species == "setosa")
+x <- as.matrix(iris[, 1:4])
+trainingIndices <- createDataPartition(y, p = 0.70, list = FALSE)
+trainingSetX <- x[trainingIndices, ]
+trainingSetY <- y[trainingIndices]
+testSetX <- x[-trainingIndices, ]
+testSetY <- y[-trainingIndices]
+```
+
+Then invoke the **DPLogisticRegressionClassifier**, and also get the summary of the model fitted.
+
+```{r}
+lrDP <- DPLogisticRegressionClassifier(trainingSetY, trainingSetX, lambda = 1, epsilon = 0.7)
+summary(lrDP)
+```
+Then try to predict the test data set and specify the prediction outcome to be either `probabilities` or `classes`.
+
+```{r}
+predictions <- predict(lrDP, testSetX, "classes")
+accuracy <- sum(predictions == testSetY) / length(testSetY)
+paste("The test set accuracy rate is", accuracy * 100, "%")
+```
+
+Trying on different epsilons.
+
+```{r}
+eps <- c(1, 0.7, 0.4, 0.1, 0.05)
+
+accuracy <- sapply(eps, function(epsilon) {
+  lrDP <- DPLogisticRegressionClassifier(trainingSetY, trainingSetX, lambda = 1, epsilon = 0.7) 
+  predictions <- predict(lrDP, testSetX, "classes")
+  sum(predictions == testSetY) * 100 / length(testSetY)
+})
+
+df <- data.frame(epsilon = eps,
+                accuracy = accuracy)
+ggplot(data=df, aes(x=epsilon, y=accuracy, group=1)) +
+  geom_line() +
+  geom_point() +
+  scale_size_area()
+```
+
 
 ## Synthetic Data - Proof of differential privacy
 
@@ -242,14 +291,15 @@ Thank you!
 
 ## References
 
-Zhanglong Ji, Zachary C Lipton, and Charles Elkan. “Differential privacy and machine learning:
-  A survey and review”. In: arXiv preprint arXiv:1412.7584 (2014).
-  
-Jaideep Vaidya, Basit Shafiq, Anirban Basu, and Yuan Hong. "Differentially
-  private naive Bayes classification." In Web Intelligence, pages 571–576, 2013.
-  
 Geetha Jagannathan, Krishnan Pillaipakkamnatt, and Rebecca N. Wright.
   "A practical differentially private random decision tree classifier". In International
   Conference on Data Mining Workshops, pages 114–121, 2009.
 
+Kamalika Chaudhuri, Claire Monteleoni, Anand D. Sarwate. "Differentially Private Empirical      Risk Minimization". In Journal of Machine Learning Research 12 (2001) 1069-1109.
+
+Jaideep Vaidya, Basit Shafiq, Anirban Basu, and Yuan Hong. "Differentially
+  private naive Bayes classification." In Web Intelligence, pages 571–576, 2013.
+  
+Zhanglong Ji, Zachary C Lipton, and Charles Elkan. “Differential privacy and machine learning:
+  A survey and review”. In: arXiv preprint arXiv:1412.7584 (2014).
 
