@@ -9,9 +9,10 @@ laplace(originalData, sensitivity, epsilon)
 \arguments{
 \item{originalData}{data that needs to sensitized}
 
-\item{sensitivity}{sensitivity}
+\item{sensitivity}{sensitivity of the input, captures how much one data point
+data can affect output}
 
-\item{epsilon}{epsilon}
+\item{epsilon}{privacy budget parameter in epsilon differential private procedure}
 }
 \value{
 the perturbed data

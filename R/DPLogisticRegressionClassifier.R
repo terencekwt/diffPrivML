@@ -45,8 +45,8 @@ DPLogisticRegressionClassifier <- function(y, x, lambda, alpha = 0, epsilon = 0)
   # for output perturbation, we first run the regular logistic regression
   # through glmnet to get the weights that minimize the loss, then add noise
   # that guarantees the differential private bound
-  model <- glmnet(x, y, family = ("binomial"), alpha = alpha, lambda = 1)
-  param.out <- as.matrix(coef(model))
+  model <- glmnet::glmnet(x, y, family = ("binomial"), alpha = alpha, lambda = 1)
+  param.out <- as.matrix(stats::coef(model))
   if (epsilon > 0) {
     noise <- outputNoise(n, d, lambda, epsilon)
     param.out <- param.out + noise
