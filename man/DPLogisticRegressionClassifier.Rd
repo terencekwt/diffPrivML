@@ -4,12 +4,12 @@
 \alias{DPLogisticRegressionClassifier}
 \title{Implementation of DPLogisticRegressionClassifier. An S3 class.}
 \usage{
-DPLogisticRegressionClassifier(y, x, lambda, alpha, epsilon = 0)
+DPLogisticRegressionClassifier(y, x, lambda, alpha = 0, epsilon = 0)
 }
 \arguments{
-\item{y}{y variable with binary outcome}
+\item{y}{vector with binary outcome}
 
-\item{x}{x vairable}
+\item{x}{a data frame with predictor columns}
 
 \item{lambda}{regularization variable}
 
@@ -25,9 +25,9 @@ Implementation of DPLogisticRegressionClassifier. An S3 class.
 }
 \examples{
 data(iris)
-x = as.matrix(iris[,1:4])
-y = factor(iris$Species=="setosa")
-lrClassifier = DPLogisticRegressionClassifier(y,x,lambda = 1, alpha = 0, epsilon = 1)
+x <- as.matrix(iris[, 1:4])
+y <- factor(iris$Species == "setosa")
+lrClassifier <- DPLogisticRegressionClassifier(y, x, lambda = 1, alpha = 0, epsilon = 1)
 
 }
 \author{

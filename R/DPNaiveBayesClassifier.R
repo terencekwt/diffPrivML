@@ -1,16 +1,22 @@
 #' @include noiseFunctions.R
 NULL
 
-#'Implementation of DPNaiveBayesClassifier. An S3 class.
+#'
+#'Implementation of DPNaiveBayesClassifier (S3 Class). This is a naive bayes
+#'classifier with output perturbation implemented as the differential private
+#'procedure. The algorithm uses laplace noise.
 #'
 #'@author Terence Tam
 #'
 #'@param y a named vector of outcome labels
 #'@param x a data frame with named predictor columns
 #'@param epsilon privacy budget in epsilon-differential private procedure
-#'@param mechanism function for DF (i.e. Laplace, Gaussian)
 #'
-#'@return a classifier object
+#'@return a classifier object trained with naive bayes 4 attributes.
+#' 1) likelihoods : a table that can be used to calculate P(X_i | C_j)
+#' 2) prioProb : the prior distribution P(C_j)
+#' 3) classLabels : the list of distinct labels from Y
+#' 4) epsilon : privacy budget
 #'
 #'@export
 #'
@@ -20,14 +26,14 @@ NULL
 #'x <- iris[, 1:4]
 #'naiveBayesDP <- DPNaiveBayesClassifier(y, x, epsilon = 1.0)
 #'
-DPNaiveBayesClassifier <- function(y, x, epsilon = NULL, mechanism = NULL){
+DPNaiveBayesClassifier <- function(y, x, epsilon = NULL){
 
-  #validations before we proceed
+  # validations before we proceed
   if(nrow(x) != length(y)){
     stop("ERROR: The predictors x and class labels y have unequal lengths.")
   }
 
-  #training
+  # training data
   trainingSetX <- x
   trainingSetY <- y
   classLabels <- names(table(trainingSetY))
@@ -35,11 +41,12 @@ DPNaiveBayesClassifier <- function(y, x, epsilon = NULL, mechanism = NULL){
   #P(C_j)
   priorProb <- laplace(as.vector(table(trainingSetY)), 1, 1)/ length(trainingSetY)
 
-  #mean and sd for all P(a_i|C_j) calculating purposes
+  # statistics that is needed to calculate P(a_i|C_j)
   likelihoods <-
     sapply(names(trainingSetX), function(featureName) {
       feature <- trainingSetX[[featureName]]
       if (is.numeric(feature)) {
+        # mean and sd for all P(a_i|C_j) calculating purposes
         sensitivity <- (max(feature) - min(feature)) / (length(feature) + 1)
         statsTable <- rbind(tapply(feature, trainingSetY,
                                    function(x) {laplace(mean(x), sensitivity, epsilon)}),
@@ -64,7 +71,7 @@ DPNaiveBayesClassifier <- function(y, x, epsilon = NULL, mechanism = NULL){
   return(self)
 }
 
-#'S3 method for summary.
+#'S3 method for DPNaiveBayesClassifier's summary.
 #'
 #'@author Terence Tam
 #'
@@ -84,10 +91,10 @@ summary.DPNaiveBayesClassifier <- function(object, ...) {
   cat("## Class labels:", object$classLabels, "\n\n")
   cat("## Privacy budget:", object$epsilon, "\n\n")
   cat("## Prior probabilites:", object$priorProb, "\n\n")
-  cat("## Likelihoods", "\n")
-  for (l in object$likelihoods) {
+  cat("## Likelihoods tabulation:", "\n")
+  for (item in object$likelihoods) {
     cat("## ")
-    print(l)
+    print(item)
   }
 }
 
@@ -128,6 +135,7 @@ predict.DPNaiveBayesClassifier <- function(object, testSetX = NULL, ...){
           stats::dnorm(data[[x]], mean = likelihoods[[x]]['mean', y],
                        sd = likelihoods[[x]]['sd', y])
         } else {
+          # categorical variable
           likelihoods[[x]][y, data[[x]]]
         }
       }))
@@ -136,7 +144,6 @@ predict.DPNaiveBayesClassifier <- function(object, testSetX = NULL, ...){
     prediction <- object$classLabels[which.max(posteriorProb)]
     prediction
   }
-
   apply(testSetX, 1, predictOneData)
 }
 

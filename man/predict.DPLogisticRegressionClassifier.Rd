@@ -2,7 +2,7 @@
 % Please edit documentation in R/DPLogisticRegressionClassifier.R
 \name{predict.DPLogisticRegressionClassifier}
 \alias{predict.DPLogisticRegressionClassifier}
-\title{predict of logistic regression}
+\title{predict method for DP logistic regression}
 \usage{
 \method{predict}{DPLogisticRegressionClassifier}(object, predictX = NULL,
   type = c("classes", "probabilities"), ...)
@@ -10,25 +10,24 @@
 \arguments{
 \item{object}{the classifier object for this predict method}
 
-\item{predictX}{a data frame in which to look for variables with which to
-predict. If omitted, data used for model fitting will be used}
+\item{predictX}{a data frame that holds test data points that will be
+predicted. If omitted, data used for model fitting will be used}
 
 \item{type}{the type of prediction. Can be either classes or probabilities}
 
 \item{...}{not applicable for this class}
 }
 \description{
-predict of logistic regression
+predict method for DP logistic regression
 }
 \examples{
 data(iris)
-x = as.matrix(iris[,1:4])
-y = factor(iris$Species=="setosa")
-lrClassifier = DPLogisticRegressionClassifier(y,x,lambda = 1, alpha = 0,
-epsilon = 1)
+x <- as.matrix(iris[, 1:4])
+y <- factor(iris$Species == "setosa")
+lrClassifier <- DPLogisticRegressionClassifier(y, x, lambda = 1, alpha = 0, epsilon = 1)
 summary(lrClassifier)
-result = predict(lrClassifier,type = "classes")
-table(result,y)
+result <- predict(lrClassifier, type = "classes")
+table(result, y)
 }
 \author{
 Yifan Gong

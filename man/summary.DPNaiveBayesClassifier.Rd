@@ -2,7 +2,7 @@
 % Please edit documentation in R/DPNaiveBayesClassifier.R
 \name{summary.DPNaiveBayesClassifier}
 \alias{summary.DPNaiveBayesClassifier}
-\title{S3 method for summary.}
+\title{S3 method for DPNaiveBayesClassifier's summary.}
 \usage{
 \method{summary}{DPNaiveBayesClassifier}(object, ...)
 }
@@ -12,7 +12,7 @@
 \item{...}{not applicable for this class}
 }
 \description{
-S3 method for summary.
+S3 method for DPNaiveBayesClassifier's summary.
 }
 \examples{
 data(iris)

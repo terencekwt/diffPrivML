@@ -2,9 +2,11 @@
 % Please edit documentation in R/DPNaiveBayesClassifier.R
 \name{DPNaiveBayesClassifier}
 \alias{DPNaiveBayesClassifier}
-\title{Implementation of DPNaiveBayesClassifier. An S3 class.}
+\title{Implementation of DPNaiveBayesClassifier (S3 Class). This is a naive bayes
+classifier with output perturbation implemented as the differential private
+procedure. The algorithm uses laplace noise.}
 \usage{
-DPNaiveBayesClassifier(y, x, epsilon = NULL, mechanism = NULL)
+DPNaiveBayesClassifier(y, x, epsilon = NULL)
 }
 \arguments{
 \item{y}{a named vector of outcome labels}
@@ -12,14 +14,18 @@ DPNaiveBayesClassifier(y, x, epsilon = NULL, mechanism = NULL)
 \item{x}{a data frame with named predictor columns}
 
 \item{epsilon}{privacy budget in epsilon-differential private procedure}
-
-\item{mechanism}{function for DF (i.e. Laplace, Gaussian)}
 }
 \value{
-a classifier object
+a classifier object trained with naive bayes 4 attributes.
+1) likelihoods : a table that can be used to calculate P(X_i | C_j)
+2) prioProb : the prior distribution P(C_j)
+3) classLabels : the list of distinct labels from Y
+4) epsilon : privacy budget
 }
 \description{
-Implementation of DPNaiveBayesClassifier. An S3 class.
+Implementation of DPNaiveBayesClassifier (S3 Class). This is a naive bayes
+classifier with output perturbation implemented as the differential private
+procedure. The algorithm uses laplace noise.
 }
 \examples{
 data(iris)
