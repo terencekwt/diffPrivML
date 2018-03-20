@@ -156,7 +156,8 @@ DPRandomDecisionTreeClassifier <- function(Y, X, epsilon = NULL, numTrees = 5,
     trees<-c(trees, tree)
     i = i + 1
   }
-  self <- list(trees = trees, classLabels = classLabels, epsilon = epsilon)
+  self <- list(trees = trees, classLabels = classLabels,
+               epsilon = epsilon, height = height, numTrainingData = nrow(X))
 
   class(self) <- append("DPRandomDecisionTreeClassifier", class(self))
   return(self)
@@ -172,9 +173,11 @@ DPRandomDecisionTreeClassifier <- function(Y, X, epsilon = NULL, numTrees = 5,
 #'@export
 #'
 summary.DPRandomDecisionTreeClassifier <- function(object, ...) {
-  cat("## Class labels:", object$classLabels, "\n\n")
-  cat("## Privacy budget:", object$epsilon, "\n\n")
-  cat("## # of trees", length(object$trees), "\n\n")
+  cat("Class labels:", object$classLabels, "\n\n")
+  cat("Privacy budget:", object$epsilon, "\n\n")
+  cat("Number of trees:", length(object$trees), "\n\n")
+  cat("Max height of trees:", object$height, "\n\n")
+  cat("Number of training examples supplied:", object$numTrainingData, "\n\n")
 }
 
 #'S3 method for DPRandomDecisionTreeClassifier's predict

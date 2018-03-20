@@ -22,7 +22,7 @@ Therefore, we developed a R package, `diffPrivML`, that aims to put these differ
 
 ## Overview of package
 
-The `diffPrivML` package consists of a library of classifiers implemented as S3 classes, each with differential privacy supported.
+The `diffPrivML` package consists of a library of classifiers implemented as S3 classes, each with differential privacy supported using algorithms from published research.
 
 * DPNaiveBayesClassifier 
 * DPRandomDecisionTreeClassifier
@@ -44,24 +44,28 @@ One slight deviation from the original project proposal to also support neural n
 
 ## Use cases
 
-### Random Decision Tree Ensemble Classifier
+First, let's invoke our library! Also will call the caret library, just for the sake that it can cleanly partition training vs test data for us.
 
-First, let's invoke the caret library, just for the sake that it can cleanly partitiotn training vs test data for us.
-
-```{r}
-library(caret)
+```{r, results='hide', message=FALSE}
 library(diffPrivML)
+library(caret)
 set.seed(50) # for reproducibility
 ```
 
-Then, let's use the categorical health dataset `BreastCancer` preloaded in the diffPrivML package. We picked health records as that is the quintessential data that needs privatization!
+### Random Decision Tree Ensemble Classifier
+
+Random decision tree classifier uses the concept of ensemble, where we construct a series of base individual classifiers (trees) and then combine these trees together to form a forest (ensemble). Random decision tree, unlike traditional classification decision trees, are constructed by partitioning the data randomly at each node--this is a rather important detail.
+
+The advantage for such "random" trees allow the math of calculating sensitivity of differential privacy bounds to be much easier. This approach allows us to first compute entire decision tree and then simply adds noise at the end to the leave nodes. On the other hand, with more complex traditional decision tree that uses heuristics like Gini index and information criterion, the differential privacy sensitivity bound is not so straightforward. This is the reason why we implemented this from scratch as most popular decision tree packages have these heuristics baked in.
+
+Let's demonstrate this random decision tree classifier, using the categorical health dataset `BreastCancer` preloaded in the diffPrivML package. We picked health records as that is the quintessential data that needs privatization!
 
 ```{r}
 data(BreastCancer)
 head(BreastCancer)
 ```
 
-Now let's actually split the BreastCancer data into training set and test set, and fit the classifier model with the training data.
+First let's actually split the BreastCancer data into training set and test set, and fit the classifier model with the training data, calling our `DPRandomDecisionTreeClassifier` api.
 
 ```{r}
 Y <- BreastCancer[, 11]
@@ -74,7 +78,7 @@ testSetX <- X[-trainingIndices, ]
 testSetY <- Y[-trainingIndices]
 
 rdtDP <- DPRandomDecisionTreeClassifier(Y = trainingSetY, X = trainingSetX,
-                                        height = 4, numTrees = 5, epsilon = 1.0)
+                                        height = 4, numTrees = 6, epsilon = 10.0)
 summary(rdtDP)
 ```
 
@@ -90,10 +94,10 @@ paste("The test set accuracy rate is", accuracy * 100, "%")
 
 Note this classifier is only supported for categorical data. `DPNaiveBayesClassifier`, on the other hand, support mixed categorical / numerical attributes.
 
-One thing end users of this package have to keep in mind is the tradeoff between how much to reveal in their trained model (privacy) vs how effective the classification is (accuracy). Below, we graphed the accuracy of the above dataset with various epsilon (privacy budget) to show this decay.
+Now, one thing end users of this package have to keep in mind is the tradeoff between how much to reveal in their trained model (privacy) vs how effective the classification is (accuracy). Below, we graphed the test set accuracy of the above dataset with various epsilon (privacy budget) to show this decay. A tighter privacy bound (as epsilon decreases), the accuracy of the classifier gradually decreases.
 
 ```{r}
-eps <- c(5, 1, 0.7, 0.4, 0.01, 0.0002)
+eps <- c(3, 1, 0.7, 0.4, 0.01, 0.0002)
 
 accuracy <- sapply(eps, function(epsilon) {
   rdtDP <- DPRandomDecisionTreeClassifier(Y = trainingSetY, X = trainingSetX, height = 3, 
@@ -110,10 +114,16 @@ ggplot(data=df, aes(x=epsilon, y=accuracy, group=1)) +
   scale_size_area()
 ```
 
+This implementation is inspired by the research done [here](http://paul.rutgers.edu/~geetha/rdt.pdf).
 
 ### Naive Bayes Classifier
 
-Just like the previous classifier, the same is true for `DPNaiveBayesClassifier` where a dataset is used as input.
+Another classifier we implemented is the differential private naive bayes classifier. This classifier support mixed numerical and categorical predictors, as well as multivariate labels. For end user, this is a great general all-purpose privacy preserving classifier readily available out of the toolbox.
+
+The elegance of naive bayes classifier, albeit the notion of being simple, is that it doesn't need to sequentially feed in batches of training data to minimize a loss function. The whole dataset is read once and all the prior probabilities and conditional probabilites are computed. That make this classifier an attractive option for calulating differential privacy sensitivity bounds.
+
+To invoke `DPNaiveBayesClassifier`, we simply the same set of steps as before. First get your data ready in the right format.
+
 ```{r}
 data(iris)
 y <- iris[, 5]
@@ -139,7 +149,7 @@ accuracy <- sum(predictions == testSetY) / length(testSetY)
 paste("The test set accuracy rate is", accuracy * 100, "%")
 ```
 
-Trying on different epsilons.
+Similar performance is shown when we tighten up epsilon.
 
 ```{r}
 eps <- c(1, 0.7, 0.4, 0.1, 0.05)
@@ -158,11 +168,15 @@ ggplot(data=df, aes(x=epsilon, y=accuracy, group=1)) +
   scale_size_area()
 ```
 
+This implementation is inspired by research done [here](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6690067).
+
 ### Logistic Regression Classifier
 
-Logistic regression is a type of model for binary classification problems. Karalikta et al. (2011) described an output pertubation mechanism that's applicable to regularized logistic regression classifiers. This package implements that mechanism via first calling package `glmnet` to get the weights that minimize the loss, and then adding noise subject to the privacy budget and regularization parameter. We would also like to credit our noise function to Staal A. Vinterbo and his R package `PrivateLR`. Unlike `PrivateLR` which built the logistic regression model from scratch, we use `glmnet` for the weights and enable two regularization techniques: ridge and lasso.
+Lastly, we implemented differential private logistic regression. Logistic regression is a type of model for binary classification problems. Karalikta et al. (2011) described an output pertubation mechanism that's applicable to regularized logistic regression classifiers. This package implements that mechanism via first calling package `glmnet` to get the weights that minimize the loss, and then adding noise subject to the privacy budget and regularization parameter. 
 
-Just like previous classifiers, `DPLogisticRegressionClassifier` requires a dataset as input.
+We would also like to credit our noise function to Staal A. Vinterbo and his R package `PrivateLR`. Unlike `PrivateLR` which built the logistic regression model from scratch, we use `glmnet` for the weights and enable two regularization techniques: ridge and lasso.
+
+Just as before, the classifier can be invoked with a similar fashion.
 ```{r}
 data(iris)
 y <- factor(iris$Species == "setosa")
@@ -172,14 +186,11 @@ trainingSetX <- x[trainingIndices, ]
 trainingSetY <- y[trainingIndices]
 testSetX <- x[-trainingIndices, ]
 testSetY <- y[-trainingIndices]
-```
 
-Then invoke the `DPLogisticRegressionClassifier`, and also get the summary of the model fitted.
-
-```{r}
-lrDP <- DPLogisticRegressionClassifier(trainingSetY, trainingSetX, lambda = 1, epsilon = 0.7)
+lrDP <- DPLogisticRegressionClassifier(trainingSetY, trainingSetX, lambda = 1, epsilon = 2)
 summary(lrDP)
 ```
+
 Then try to predict the test data set and specify the prediction outcome to be either `probabilities` or `classes`.
 
 ```{r}
@@ -188,26 +199,6 @@ accuracy <- sum(predictions == testSetY) / length(testSetY)
 paste("The test set accuracy rate is", accuracy * 100, "%")
 ```
 
-Trying on different epsilons.
-
-```{r}
-eps <- c(1, 0.7, 0.4, 0.1, 0.05)
-
-accuracy <- sapply(eps, function(epsilon) {
-  lrDP <- DPLogisticRegressionClassifier(trainingSetY, trainingSetX, lambda = 1, epsilon = 0.7) 
-  predictions <- predict(lrDP, testSetX, "classes")
-  sum(predictions == testSetY) * 100 / length(testSetY)
-})
-
-df <- data.frame(epsilon = eps,
-                accuracy = accuracy)
-ggplot(data=df, aes(x=epsilon, y=accuracy, group=1)) +
-  geom_line() +
-  geom_point() +
-  scale_size_area()
-```
-
-
 ## Synthetic Data - Proof of differential privacy
 
 It is trivial to capture what kind of privacy data loss a summary query would leak in a database system. For example, a pair of queries like `SELECT SUM(salary)` and `SELECT SUM(salary) WHERE name != ‘Terence Tam’` would do the trick. An adversary just observe the difference between the two results and be able to deduce the individual salary of "Terence Tam".
@@ -215,8 +206,6 @@ It is trivial to capture what kind of privacy data loss a summary query would le
 However, when it comes to the output of a machine learning model, it is not so straightforward as the "summary" returned is rather complex. In addition, understanding in the context of privacy loss the difference between how two training data sets that differs only by one datapoint can lead to two differently trained models is also nontrivial.
 
 To be able to demonstrate this, I will use the `DPRandomDecisionTreeClassifier` again in this package. The advantage of decision tree is that it can be served as a good visualization of the output space created by the model. 
-
-Decision trees are built where each predictor is a node, and each branch is one of the level of the predictor.
 
 Suppose we have some synthetic data set that looks like this
 
@@ -234,48 +223,64 @@ Suppose we run a non-private random decision tree classifier with the three data
 
 ```{r}
 rdtDP <- DPRandomDecisionTreeClassifier(Y = syntheticData[,3], X = syntheticData[,1:2], height = 2, numTrees = 1)
+rdtDP$trees[[1]]$printTree()
 ```
+
+In this instance, the classifier decide to first partition on A, then B, hence A is the root and B are the children nodes. There are two branches because A has two possible values (0 and 1).
 
 When epsilon is not specified in our DP classifier, that will default to non-private algorithm (in a sense, that means epsilon is infinite). Also here, explicitly setting numTree = 1 so we only have 1 tree in our classifer for sake of discussion.
 
-
-
-Note the RDT tree is unpruned. Now suppose we train the classifer 100 times, it is with certainty that with the data point, the predicted output is the same.
-
-```{r}
-experiment <- function(epsilon){
-  rdtDP <- DPRandomDecisionTreeClassifier(Y = syntheticData[,3], X = syntheticData[,1:2], 
-                                          height = 2, numTrees = 1, epsilon = epsilon)
-  predict(rdtDP, syntheticData[1,1:2])
-}
-table(replicate(100, experiment(NULL)))
-```
-
-Now let's suppose we are limiting privacy budget, and then try compare the two models.
-
-With data point
-
-```{r}
-table(replicate(100, experiment(epsilon = 0.005)))
-```
-
-Without data point
+Now suppose we train the classifer 100 times, it is with certainty that for the data point (A=0,B=1,class=Y), the predicted output is the same, which is 'Y'.
 
 ```{r}
 experiment <- function(){
-  rdtDP <- DPRandomDecisionTreeClassifier(Y = syntheticData[-1,3], X = syntheticData[-1,1:2], height = 2, numTrees = 1, epsilon = 0.005)
-  predict(rdtDP, syntheticData[1,1:2])
+  rdtDP <- DPRandomDecisionTreeClassifier(Y = syntheticData[,3], X = syntheticData[,1:2], 
+                                          height = 2, numTrees = 1)
+  predict(rdtDP, syntheticData[1,1:2]) # predict what class when (A=0,B=1)
 }
 table(replicate(100, experiment()))
 ```
 
-So the two models become more "alike" and the adversary can't guess which dataset is actually used for each output.
+What if then we exclude this data point (A=0,B=1,class=Y) from the original training data? Not suprisingly, for non-private decision tree, the generated tree is then just A -> B, as one of the branch get pruned out as none of the training data (the remaining 2 data points) traverses the A = 0 path.
 
-The generated decision tree is below.
+Hence this is what makes the original decision tree non-private! Two training datasets that are just 1 data different renders two distinguishable model outputs, in the form of two different trees.
+
+To remediate this data privacy loss, now let's suppose we are tightening up the privacy budget (setting epsilon to something low like 0.005), and then try compare the two models (one with 2 training data and one with 3 training data points).
+
+Training with data point (A=0,B=1,class=Y) included.
+
 ```{r}
-#dtDP1$trees[[1]]$printTree()
-#rdtDP2$trees[[1]]$printTree()
+rdtDP1 <- DPRandomDecisionTreeClassifier(Y = syntheticData[,3], X = syntheticData[,1:2], height = 2, numTrees = 1, epsilon = 0.005)
 ```
+
+Training without data point (A=0,B=1,class=Y) included.
+
+```{r}
+rdtDP2 <- DPRandomDecisionTreeClassifier(Y = syntheticData[-1,3], X = syntheticData[-1,1:2], height = 2, numTrees = 1, epsilon = 0.005)
+```
+
+```{r}
+experimentWithPrivacy <- function(Y, X) {
+  rdtDP <- DPRandomDecisionTreeClassifier(Y = Y, X = X, height = 2, numTrees = 1, epsilon = 0.005)
+  predict(rdtDP, syntheticData[1,1:2]) # predict what class when (A=0,B=1)
+}
+#with data point included
+table(replicate(100, experimentWithPrivacy(Y = syntheticData[,3], X = syntheticData[,1:2])))
+#without data point included
+table(replicate(100, experimentWithPrivacy(Y = syntheticData[-1,3], X = syntheticData[-1,1:2])))
+```
+
+As you can see, with stricter differential privacy enforced, the two models have enough noise added and become more "alike" such that the adversary can't guess which dataset is actually used given the generated model ouput (the trees).
+
+The generated decision trees "looks" the same as expected. Even though rdtDP2 was missing the extra training data point, our DP decision tree algorithm leave that branch unpruned and generate noise to make the output less distinguishable. 
+```{r}
+rdtDP1$trees[[1]]$printTree()
+rdtDP2$trees[[1]]$printTree()
+```
+
+(The order of partitioning is random, so it could be A as root or B as root.)
+
+Hence this proves the basis of how differential privacy is enforced.
 
 ## Contributions
 
@@ -283,7 +288,7 @@ We spent equal of time researching in the beginning to understand the concept of
 
 ## Future extensions
 
-So far, our package deals specifically with privatizing training data in the machine learning workflow. Oftentimes, machine learning algorithms have yet another set of data (the hold out set or validation set) for hyperparameter tuning and cross validations. These data also influence the final model output and so requires another set of privatization procedure to enforce differential privacy.
+So far, our package deals specifically with privatizing *training* data in the machine learning workflow. Oftentimes, machine learning algorithms have yet another set of data (the hold out set or validation set) for hyperparameter tuning and cross validations. These data also influence the final model output and so requires another set of privatization procedure to enforce differential privacy.
 
 Again, `diffPrivML` serves as a precursor in standardizing a library of ML algorithms and workflows that have differential privacy baked in. Classification and output perturbations are just starting points. The package can naturally be extended to unsupervised learning as well as other perturbation methods (input and objective perturbations).
 
@@ -295,7 +300,8 @@ Geetha Jagannathan, Krishnan Pillaipakkamnatt, and Rebecca N. Wright.
   "A practical differentially private random decision tree classifier". In International
   Conference on Data Mining Workshops, pages 114–121, 2009.
 
-Kamalika Chaudhuri, Claire Monteleoni, Anand D. Sarwate. "Differentially Private Empirical      Risk Minimization". In Journal of Machine Learning Research 12 (2001) 1069-1109.
+Kamalika Chaudhuri, Claire Monteleoni, Anand D. Sarwate. "Differentially Private Empirical Risk Minimization".
+  In Journal of Machine Learning Research 12 (2001) 1069-1109.
 
 Jaideep Vaidya, Basit Shafiq, Anirban Basu, and Yuan Hong. "Differentially
   private naive Bayes classification." In Web Intelligence, pages 571–576, 2013.
