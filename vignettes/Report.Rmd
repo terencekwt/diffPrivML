@@ -18,17 +18,17 @@ The release of these trained machine learning models, however, comes with a cost
 
 To analyze and potentially solve this problem, one unified framework proposed by Cynthia Dwork's paper is the $\epsilon$-differential private mechanism. This is a model that quantifies the degrees of privacy loss for a given data release system, and a tolerance level as a parameter--$\epsilon$. A lot of theoretical research has been done on different ML models with regards to differential privacy, such as these research [here](https://arxiv.org/pdf/1412.7584.pdf), but not enough efforts are being done to apply these in practice.
 
-Therefore, we developed a R package, **diffPrivML**, that aims to put these differential private enhanced ML algorithms in the hands of data practitioners. Just like how a unified framework is developed to measure differential privacy, **diffPrivML** is a precursor in standardizing a library of ML algorithms and workflows that have differential privacy baked in. End users do not need to worry about *HOW* to perturb the data to release their models; the ML algorithm itself makes the guarantee.
+Therefore, we developed a R package, `diffPrivML`, that aims to put these differential private enhanced ML algorithms in the hands of data practitioners. Just like how a unified framework is developed to measure differential privacy, `diffPrivML` is a precursor in standardizing a library of ML algorithms and workflows that have differential privacy baked in. End users do not need to worry about *HOW* to perturb the data to release their models; the ML algorithm itself makes the guarantee.
 
 ## Overview of package
 
-The **diffPrivML** package consists of a library of classifiers implemented as S3 classes, each with differential privacy supported.
+The `diffPrivML` package consists of a library of classifiers implemented as S3 classes, each with differential privacy supported.
 
 * DPNaiveBayesClassifier 
 * DPRandomDecisionTreeClassifier
 * DPLogisticRegressionClassifier 
 
-For example, to fit a model of **DPNaiveBayesClassifier**, the privacy budget, epsilon, can be specified as part of the input like so.
+For example, to fit a model of `DPNaiveBayesClassifier`, the privacy budget, epsilon, can be specified as part of the input like so.
 
 ```{r, eval=FALSE}
 naiveBayesDP <- DPNaiveBayesClassifier(y = classLabels, x = predictors, epsilon = 0.05)
@@ -36,7 +36,7 @@ naiveBayesDP <- DPNaiveBayesClassifier(y = classLabels, x = predictors, epsilon 
 
 The model is fitted with the input training data when the classifier object gets instantiated.
 
-Each classifier in **diffPrivML** also has all the standard ML methods such as **summary()** and **predict()**. So far, all the ML algorithms in this package uses output perturbation methods for enforcing differential privacy.  
+Each classifier in `diffPrivML` also has all the standard ML methods such as `summary` and `predict()`. So far, all the ML algorithms in this package uses output perturbation methods for enforcing differential privacy.  
 
 All unit tests are in **/tests** directory.
 
@@ -54,7 +54,7 @@ library(diffPrivML)
 set.seed(50) # for reproducibility
 ```
 
-Then, let's use the categorical health dataset **BreastCancer** preloaded in the diffPrivML package. We picked health records as that is the quintessential data that needs privatization!
+Then, let's use the categorical health dataset `BreastCancer` preloaded in the diffPrivML package. We picked health records as that is the quintessential data that needs privatization!
 
 ```{r}
 data(BreastCancer)
@@ -78,9 +78,9 @@ rdtDP <- DPRandomDecisionTreeClassifier(Y = trainingSetY, X = trainingSetX,
 summary(rdtDP)
 ```
 
-The summary() method will give all the parameters associated with the trained model. Again, end user can tweak parameters like depth of trees (height) and number of trees in the ensemble (numTrees) to boost the model performance.
+The `summary` method will give all the parameters associated with the trained model. Again, end user can tweak parameters like depth of trees (height) and number of trees in the ensemble (numTrees) to boost the model performance.
 
-For predicting the test set, we then run predict() on the trained model.
+For predicting the test set, we then run `predict` on the trained model.
 
 ```{r}
 predictions <- predict(rdtDP, testSetX)
@@ -88,7 +88,7 @@ accuracy <- sum(predictions == testSetY) / length(testSetY)
 paste("The test set accuracy rate is", accuracy * 100, "%")
 ```
 
-Note this classifier is only supported for categorical data. DPNaiveBayesClassifier, on the other hand, support mixed categorical / numerical attributes.
+Note this classifier is only supported for categorical data. `DPNaiveBayesClassifier`, on the other hand, support mixed categorical / numerical attributes.
 
 One thing end users of this package have to keep in mind is the tradeoff between how much to reveal in their trained model (privacy) vs how effective the classification is (accuracy). Below, we graphed the accuracy of the above dataset with various epsilon (privacy budget) to show this decay.
 
@@ -113,7 +113,7 @@ ggplot(data=df, aes(x=epsilon, y=accuracy, group=1)) +
 
 ### Naive Bayes Classifier
 
-Just like the previous classifier, the same is true for **DPNaiveBayesClassifier** where a dataset is used as input.
+Just like the previous classifier, the same is true for `DPNaiveBayesClassifier` where a dataset is used as input.
 ```{r}
 data(iris)
 y <- iris[, 5]
@@ -125,7 +125,7 @@ testSetX <- x[-trainingIndices, ]
 testSetY <- y[-trainingIndices]
 ```
 
-Then invoke the **DPNaiveBayesClassifier**, and also get the summary of the model fitted.
+Then invoke the `DPNaiveBayesClassifier`, and also get the summary of the model fitted.
 
 ```{r}
 naiveBayesDP <- DPNaiveBayesClassifier(trainingSetY, trainingSetX, epsilon = 0.7)
@@ -162,7 +162,7 @@ ggplot(data=df, aes(x=epsilon, y=accuracy, group=1)) +
 
 Logistic regression is a type of model for binary classification problems. Karalikta et al. (2011) described an output pertubation mechanism that's applicable to regularized logistic regression classifiers. This package implements that mechanism via first calling package `glmnet` to get the weights that minimize the loss, and then adding noise subject to the privacy budget and regularization parameter. We would also like to credit our noise function to Staal A. Vinterbo and his R package `PrivateLR`. Unlike `PrivateLR` which built the logistic regression model from scratch, we use `glmnet` for the weights and enable two regularization techniques: ridge and lasso.
 
-Just like previous classifiers, **DPLogisticRegressionClassifier** requires a dataset as input.
+Just like previous classifiers, `DPLogisticRegressionClassifier` requires a dataset as input.
 ```{r}
 data(iris)
 y <- factor(iris$Species == "setosa")
@@ -174,7 +174,7 @@ testSetX <- x[-trainingIndices, ]
 testSetY <- y[-trainingIndices]
 ```
 
-Then invoke the **DPLogisticRegressionClassifier**, and also get the summary of the model fitted.
+Then invoke the `DPLogisticRegressionClassifier`, and also get the summary of the model fitted.
 
 ```{r}
 lrDP <- DPLogisticRegressionClassifier(trainingSetY, trainingSetX, lambda = 1, epsilon = 0.7)
@@ -210,11 +210,11 @@ ggplot(data=df, aes(x=epsilon, y=accuracy, group=1)) +
 
 ## Synthetic Data - Proof of differential privacy
 
-It is trivial to capture what kind of privacy data loss a summary query would leak in a database system. For example, a pair of queries like **SELECT SUM(salary)** and **SELECT SUM(salary) WHERE name != ‘Terence Tam’** would do the trick. An adversary just observe the difference between the two results and be able to deduce the individual salary of "Terence Tam".
+It is trivial to capture what kind of privacy data loss a summary query would leak in a database system. For example, a pair of queries like `SELECT SUM(salary)` and `SELECT SUM(salary) WHERE name != ‘Terence Tam’` would do the trick. An adversary just observe the difference between the two results and be able to deduce the individual salary of "Terence Tam".
 
 However, when it comes to the output of a machine learning model, it is not so straightforward as the "summary" returned is rather complex. In addition, understanding in the context of privacy loss the difference between how two training data sets that differs only by one datapoint can lead to two differently trained models is also nontrivial.
 
-To be able to demonstrate this, I will use the **DPRandomDecisionTreeClassifier** again in this package. The advantage of decision tree is that it can be served as a good visualization of the output space created by the model. 
+To be able to demonstrate this, I will use the `DPRandomDecisionTreeClassifier` again in this package. The advantage of decision tree is that it can be served as a good visualization of the output space created by the model. 
 
 Decision trees are built where each predictor is a node, and each branch is one of the level of the predictor.
 
@@ -285,7 +285,7 @@ TODO
 
 So far, our package deals specifically with privatizing training data in the machine learning workflow. Oftentimes, machine learning algorithms have yet another set of data (the hold out set or validation set) for hyperparameter tuning and cross validations. These data also influence the final model output and so requires another set of privatization procedure to enforce differential privacy.
 
-Again, **diffPrivML** serves as a precursor in standardizing a library of ML algorithms and workflows that have differential privacy baked in. Classification and output perturbations are just starting points. The package can naturally be extended to unsupervised learning as well as other perturbation methods (input and objective perturbations).
+Again, `diffPrivML` serves as a precursor in standardizing a library of ML algorithms and workflows that have differential privacy baked in. Classification and output perturbations are just starting points. The package can naturally be extended to unsupervised learning as well as other perturbation methods (input and objective perturbations).
 
 Thank you!
 
