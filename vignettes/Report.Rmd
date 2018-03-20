@@ -279,7 +279,7 @@ The generated decision tree is below.
 
 ## Contributions
 
-TODO
+We spent equal of time researching in the beginning to understand the concept of differential privacy and its implementations. Differential privacy is very theoretical and academic in nature and requires some amount of learning curve. Terence is responsible for implementing the decision tree and naive bayes algorithm, and Yifan is responsible for the logistic regression algorithm. 
 
 ## Future extensions
 
