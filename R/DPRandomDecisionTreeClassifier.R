@@ -21,9 +21,9 @@ RandomDecisionTree <- R6::R6Class("RandomDecisionTree",
 
       # At each node, we picked a new predictor at random and add it to the RDT,
       # but don't pick any that is already used in earlier nodes in the RDT tree
-      private$chosen <- predictors[sample(length(predictors),1)]
+      private$chosen <- predictors[sample(length(predictors), 1)]
 
-      if(length(levelsX) - length(predictors) + 1 < private$height) {
+      if (length(levelsX) - length(predictors) + 1 < private$height) {
         remaining <- predictors[predictors != private$chosen]
         chosenLevels <- private$levelsX[[private$chosen]]
 
@@ -32,7 +32,7 @@ RandomDecisionTree <- R6::R6Class("RandomDecisionTree",
         # will spawn three branches
         private$children <- c()
         i <- 1
-        while(i <= length(chosenLevels)) {
+        while (i <= length(chosenLevels)) {
           private$children<-c(private$children,
                               RandomDecisionTree$new(predictors = remaining,
                                                      levelsY = private$levelsY,
@@ -61,7 +61,7 @@ RandomDecisionTree <- R6::R6Class("RandomDecisionTree",
         private$counter[[label]] <- private$counter[[label]] + 1
       } else {
         if (is.na(level)) {
-          # data point has na value for this attribute, so just pick one at
+          # data set has acutal NA value for this attribute, so just pick one at
           # random to get down the tree
           level <- private$levelsX[[private$chosen]][[1]]
         }
@@ -77,7 +77,8 @@ RandomDecisionTree <- R6::R6Class("RandomDecisionTree",
       if(is.null(private$children)){
         private$chosen
       } else {
-        paste(private$chosen, "(", private$children[[1]]$printTree(), "," , private$children[[2]]$printTree(), ")")
+        paste(private$chosen, "(", private$children[[1]]$printTree(), "," ,
+              private$children[[2]]$printTree(), ")")
       }
     },
     #
@@ -87,7 +88,7 @@ RandomDecisionTree <- R6::R6Class("RandomDecisionTree",
     #
     getCounter = function(row){
       level <- row[[private$chosen]]
-      if (is.null(private$children)){
+      if (is.null(private$children)) {
         private$counter
       } else {
         if(is.na(level)) {
@@ -116,7 +117,9 @@ RandomDecisionTree <- R6::R6Class("RandomDecisionTree",
   ))
 
 #'
-#'Implementation of DPRandomDecisionTreeClassifier (S3 class). This is a model that
+#'Implementation of DPRandomDecisionTreeClassifier (S3 class)
+#'
+#'This is a model that
 #'creates an ensemble of Random Decision Trees for classification.
 #'
 #'@author Terence Tam
@@ -134,10 +137,10 @@ RandomDecisionTree <- R6::R6Class("RandomDecisionTree",
 DPRandomDecisionTreeClassifier <- function(Y, X, epsilon = NULL, numTrees = 5,
                                            height = floor(ncol(X)/2)){
 
-  # for each predictor in X and also the response Y, keep track of the cardinalities
-  # so we can use them for branching in decision tree
+  # for each predictor in X and also the response Y, keep track of the distinct
+  # factor levels so we can use them for branching in decision tree
   classLabels <- levels(Y)
-  levelsX <- lapply(names(X), function(predictor) { levels(X[[predictor]])})
+  levelsX <- lapply(names(X), function(predictor) { levels(X[[predictor]]) })
   names(levelsX) <- names(X)
 
   # grow Random Decision Trees. Each tree will have its own random partitioning.
@@ -148,10 +151,10 @@ DPRandomDecisionTreeClassifier <- function(Y, X, epsilon = NULL, numTrees = 5,
                                    levelsX = levelsX, height = height)
     # train the tree by feeding in training data points
     for(row in 1:nrow(X)){
-      tree$updateStats(row=X[row,], label=Y[row])
+      tree$updateStats(row=X[row, ], label=Y[row])
     }
     trees<-c(trees, tree)
-    i=i+1
+    i = i + 1
   }
   self <- list(trees = trees, classLabels = classLabels, epsilon = epsilon)
 
@@ -200,17 +203,16 @@ summary.DPRandomDecisionTreeClassifier <- function(object, ...) {
 #'accuracy <- sum(predictions == testSetY) / length(testSetY)
 #'
 predict.DPRandomDecisionTreeClassifier <- function(object, testSetX = NULL, ...){
-
   trees <- object$trees
-
   predictOneData <- function(data){
+    # add ouptut perturbation to the leaf nodes of the tree.
+    # sensitivity is 1 and epsilon is the input epsilon
     countsByClass <- lapply(trees, function(tree){
-      sapply(tree$getCounter(data), function(x){laplace(x, 1, object$epsilon)})})
+      sapply(tree$getCounter(data), function(x){ laplace(x, 1, object$epsilon)})})
     countsByClass <- Reduce("+", countsByClass)
     probabilities <- countsByClass / sum(countsByClass)
     prediction <- object$classLabels[which.max(probabilities)]
   }
-
   apply(testSetX, 1, predictOneData)
 }
 

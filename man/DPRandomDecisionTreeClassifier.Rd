@@ -2,8 +2,7 @@
 % Please edit documentation in R/DPRandomDecisionTreeClassifier.R
 \name{DPRandomDecisionTreeClassifier}
 \alias{DPRandomDecisionTreeClassifier}
-\title{Implementation of DPRandomDecisionTreeClassifier (S3 class). This is a model that
-creates an ensemble of Random Decision Trees for classification.}
+\title{Implementation of DPRandomDecisionTreeClassifier (S3 class)}
 \usage{
 DPRandomDecisionTreeClassifier(Y, X, epsilon = NULL, numTrees = 5,
   height = floor(ncol(X)/2))
@@ -22,7 +21,7 @@ default is non-private.}
 predictors in X, divided by 2. i.e. floor(ncol(X)/2)}
 }
 \description{
-Implementation of DPRandomDecisionTreeClassifier (S3 class). This is a model that
+This is a model that
 creates an ensemble of Random Decision Trees for classification.
 }
 \author{

@@ -2,9 +2,7 @@
 % Please edit documentation in R/DPNaiveBayesClassifier.R
 \name{DPNaiveBayesClassifier}
 \alias{DPNaiveBayesClassifier}
-\title{Implementation of DPNaiveBayesClassifier (S3 Class). This is a naive bayes
-classifier with output perturbation implemented as the differential private
-procedure. The algorithm uses laplace noise.}
+\title{Implementation of DPNaiveBayesClassifier (S3 Class).}
 \usage{
 DPNaiveBayesClassifier(y, x, epsilon = NULL)
 }
@@ -23,7 +21,7 @@ a classifier object trained with naive bayes 4 attributes.
 4) epsilon : privacy budget
 }
 \description{
-Implementation of DPNaiveBayesClassifier (S3 Class). This is a naive bayes
+This is a naive bayes
 classifier with output perturbation implemented as the differential private
 procedure. The algorithm uses laplace noise.
 }

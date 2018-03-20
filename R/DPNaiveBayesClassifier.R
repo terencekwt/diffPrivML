@@ -2,7 +2,9 @@
 NULL
 
 #'
-#'Implementation of DPNaiveBayesClassifier (S3 Class). This is a naive bayes
+#'Implementation of DPNaiveBayesClassifier (S3 Class).
+#'
+#'This is a naive bayes
 #'classifier with output perturbation implemented as the differential private
 #'procedure. The algorithm uses laplace noise.
 #'
@@ -67,7 +69,7 @@ DPNaiveBayesClassifier <- function(y, x, epsilon = NULL){
   self <- list(likelihoods = likelihoods, priorProb = priorProb,
        classLabels = classLabels, epsilon = epsilon)
 
-  class(self) <- c("DPNaiveBayesClassifier", "DPClassifier", class(self))
+  class(self) <- append("DPNaiveBayesClassifier", class(self))
   return(self)
 }
 
