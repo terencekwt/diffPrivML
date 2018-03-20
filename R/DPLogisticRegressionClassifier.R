@@ -38,7 +38,7 @@ DPLogisticRegressionClassifier <- function(y, x, lambda, alpha = 0, epsilon = 0)
          Turn y variables into binary factors if possible.")
   }
 
-  if (class(a) != "numeric" || lambda <= 0) {
+  if (lambda <= 0) {
     stop("ERROR: Bad user input. A positive number is required for lambda.")
   }
 
