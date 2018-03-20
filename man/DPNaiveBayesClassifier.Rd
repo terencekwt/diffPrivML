@@ -21,9 +21,8 @@ a classifier object trained with naive bayes 4 attributes.
 4) epsilon : privacy budget
 }
 \description{
-This is a naive bayes
-classifier with output perturbation implemented as the differential private
-procedure. The algorithm uses laplace noise.
+This is a naive bayes classifier with output perturbation implemented
+as the differential private procedure. The algorithm uses laplace noise.
 }
 \examples{
 data(iris)

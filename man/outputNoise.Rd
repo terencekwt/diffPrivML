@@ -2,7 +2,7 @@
 % Please edit documentation in R/noiseFunctions.R
 \name{outputNoise}
 \alias{outputNoise}
-\title{Output pertubation mechanism}
+\title{Output pertubation used by DP logistic regression classifier}
 \usage{
 outputNoise(n, d, lambda, epsilon)
 }
@@ -19,5 +19,5 @@ outputNoise(n, d, lambda, epsilon)
 output noise to be added to the coefficients estimates
 }
 \description{
-Output pertubation mechanism
+Output pertubation used by DP logistic regression classifier
 }

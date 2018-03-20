@@ -1,10 +1,10 @@
 Package: diffPrivML
 Title: Library of machine learning workflow enhanced with differential privacy
-Version: 0.0.0.9000
+Version: 1.0.0.000
 Authors@R: c(
     person("Terence", "Tam", email = "terencet@stanford.edu", role = c("aut", "cre")),
     person("Yifan", "Gong", email = "yifan.gong717@gmail.com", role = c("aut")))
-Description: What the package does (one paragraph).
+Description: diffPrivML aims to put these differential private enhanced ML algorithms in the hands of data practitioners. End users do not need to worry about *HOW* to perturb the data to release their models; the ML algorithm itself makes the guarantee.
 Depends: R (>= 3.4.3)
 License: file LICENSE
 Encoding: UTF-8

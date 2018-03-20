@@ -4,9 +4,8 @@ NULL
 #'
 #'Implementation of DPNaiveBayesClassifier (S3 Class).
 #'
-#'This is a naive bayes
-#'classifier with output perturbation implemented as the differential private
-#'procedure. The algorithm uses laplace noise.
+#'This is a naive bayes classifier with output perturbation implemented
+#'as the differential private procedure. The algorithm uses laplace noise.
 #'
 #'@author Terence Tam
 #'
